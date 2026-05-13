@@ -1,0 +1,65 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a0a3e;stop-opacity:1"/>
+      <stop offset="50%" style="stop-color:#3d1f6b;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#5c2f8f;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff6ec7;stop-opacity:0.8"/>
+      <stop offset="50%" style="stop-color:#ffd93d;stop-opacity:0.9"/>
+      <stop offset="100%" style="stop-color:#6bcfff;stop-opacity:0.8"/>
+    </linearGradient>
+    <linearGradient id="text1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff8fef;stop-opacity:1"/>
+      <stop offset="50%" style="stop-color:#ffe66d;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#ff8fef;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="text2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6dd5ff;stop-opacity:1"/>
+      <stop offset="50%" style="stop-color:#ffa8e6;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#6dd5ff;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="blur">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="40"/>
+    </filter>
+    <filter id="glow-filter">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <rect width="512" height="512" fill="url(#bg)"/>
+  
+  <circle cx="150" cy="150" r="120" fill="url(#glow)" filter="url(#blur)" opacity="0.6"/>
+  <circle cx="380" cy="350" r="100" fill="url(#glow)" filter="url(#blur)" opacity="0.5"/>
+  
+  <g filter="url(#glow-filter)">
+    <!-- P -->
+    <path d="M 80 180 L 120 180 L 120 220 L 170 220 Q 195 220 195 245 Q 195 270 170 270 L 120 270 L 120 332 L 80 332 Z M 120 240 L 120 250 L 165 250 Q 175 250 175 245 Q 175 240 165 240 Z" fill="url(#text1)" stroke="#fff" stroke-width="2" opacity="0.95"/>
+    
+    <!-- M -->
+    <path d="M 220 180 L 260 180 L 290 235 L 320 180 L 360 180 L 360 332 L 325 332 L 325 240 L 300 285 L 280 285 L 255 240 L 255 332 L 220 332 Z" fill="url(#text2)" stroke="#fff" stroke-width="2" opacity="0.95"/>
+    
+    <!-- P -->
+    <path d="M 385 180 L 425 180 L 425 220 L 475 220 Q 500 220 500 245 Q 500 270 475 270 L 425 270 L 425 332 L 385 332 Z M 425 240 L 425 250 L 470 250 Q 480 250 480 245 Q 480 240 470 240 Z" fill="url(#text1)" stroke="#fff" stroke-width="2" opacity="0.95"/>
+  </g>
+  
+  <ellipse cx="256" cy="420" rx="180" ry="15" fill="#000" opacity="0.2"/>
+  
+  <circle cx="100" cy="100" r="3" fill="#fff" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;0.3;0.8" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="420" cy="80" r="2" fill="#fff" opacity="0.7">
+    <animate attributeName="opacity" values="0.7;0.2;0.7" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="450" cy="450" r="2.5" fill="#fff" opacity="0.6">
+    <animate attributeName="opacity" values="0.6;0.2;0.6" dur="3.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="50" cy="400" r="2" fill="#fff" opacity="0.5">
+    <animate attributeName="opacity" values="0.5;0.1;0.5" dur="5s" repeatCount="indefinite"/>
+  </circle>
+</svg>
