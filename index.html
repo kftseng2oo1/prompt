@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>PromptVault · AI 提示語資料庫</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700&display=swap&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0a0a0f; --surface:#111118; --surface2:#18181f;
+  --border:rgba(255,255,255,0.07);
+  --accent:#c8f135; --accent2:#7b5cf5; --accent3:#f5a623;
+  --text:#e8e8f0; --text-muted:#666680; --text-dim:#333345;
+  --radius:14px; --radius-sm:8px;
+  --transition:0.2s cubic-bezier(0.4,0,0.2,1);
+  --sidebar-w:240px; --tabbar-h:64px;
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-serif;min-height:100%;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
+
+.app{display:flex;min-height:100vh;position:relative;z-index:1}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto}
+.logo{padding:28px 24px 20px;border-bottom:1px solid var(--border);margin-bottom:8px;flex-shrink:0}
+.logo-mark{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;letter-spacing:-0.5px;display:flex;align-items:center;gap:8px}
+.logo-mark span{color:var(--accent)}
+.logo-sub{font-size:10px;color:var(--text-muted);letter-spacing:2px;margin-top:3px;text-transform:uppercase}
+.nav-section{padding:8px 12px 4px;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1.5px;margin-top:8px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;margin:1px 8px;border-radius:var(--radius-sm);cursor:pointer;font-size:13.5px;color:var(--text-muted);transition:all var(--transition);user-select:none}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:rgba(200,241,53,0.1);color:var(--accent)}
+.nav-item .icon{width:18px;text-align:center;font-size:14px;flex-shrink:0}
+.nav-item .badge{margin-left:auto;background:var(--surface2);color:var(--text-muted);font-size:10px;padding:1px 7px;border-radius:20px}
+.nav-item.active .badge{background:rgba(200,241,53,0.15);color:var(--accent)}
+.sidebar-footer{margin-top:auto;padding:12px;border-top:1px solid var(--border);flex-shrink:0}
+.api-badge{background:rgba(123,92,245,0.1);border:1px solid rgba(123,92,245,0.2);border-radius:var(--radius-sm);padding:10px 12px;font-size:11px;color:var(--accent2);cursor:pointer;transition:all var(--transition)}
+.api-badge:hover{background:rgba(123,92,245,0.15)}
+.api-badge .api-label{font-weight:600;margin-bottom:2px}
+.api-badge .api-status{color:var(--text-muted);font-size:10px}
+
+/* ── MAIN ── */
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+
+/* ── DESKTOP HEADER ── */
+.header{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;position:sticky;top:0;background:rgba(10,10,15,0.88);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:50}
+.search-box{flex:1;max-width:440px;position:relative}
+.search-box input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px 10px 36px;color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:all var(--transition)}
+.search-box input:focus{border-color:rgba(200,241,53,0.3);background:var(--surface2)}
+.search-box input::placeholder{color:var(--text-dim)}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-dim);font-size:14px;pointer-events:none}
+.header-actions{display:flex;gap:8px;margin-left:auto}
+.btn{padding:9px 16px;border-radius:var(--radius-sm);font-size:13px;font-family:inherit;cursor:pointer;border:none;transition:all var(--transition);font-weight:500;white-space:nowrap}
+.btn-ghost{background:transparent;color:var(--text-muted);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--surface2);color:var(--text)}
+.btn-accent{background:var(--accent);color:#0a0a0f;font-weight:700}
+.btn-accent:hover{background:#d4f54a}
+.btn-accent:active,.btn-ghost:active{transform:scale(0.97)}
+.btn-sm{padding:6px 12px;font-size:12px}
+
+/* ── MOBILE HEADER ── */
+.mobile-header{display:none;padding:10px 14px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(10,10,15,0.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:50;gap:10px;align-items:center}
+.mobile-logo{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;flex-shrink:0}
+.mobile-logo span{color:var(--accent)}
+.mobile-header .search-box{flex:1;max-width:none}
+.mobile-header .search-box input{padding:9px 12px 9px 34px;font-size:14px}
+.mobile-add-btn{width:40px;height:40px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-muted);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* ── PAGES ── */
+.page{display:none;padding:22px 26px 48px}
+.page.active{display:block}
+.section-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.section-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;letter-spacing:-0.3px}
+.section-count{font-size:12px;color:var(--text-muted);background:var(--surface2);padding:2px 8px;border-radius:20px}
+.section-actions{margin-left:auto;display:flex;gap:6px}
+
+/* ── FILTER ROW ── */
+.filter-row{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;margin-bottom:18px;padding-bottom:2px;scrollbar-width:none;-ms-overflow-style:none}
+.filter-row::-webkit-scrollbar{display:none}
+.filter-tag{padding:7px 14px;border-radius:20px;font-size:12.5px;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);cursor:pointer;transition:all var(--transition);user-select:none;white-space:nowrap;flex-shrink:0}
+.filter-tag:hover{border-color:rgba(200,241,53,0.3);color:var(--text)}
+.filter-tag.active{background:rgba(200,241,53,0.1);border-color:rgba(200,241,53,0.4);color:var(--accent)}
+
+/* ── MASONRY ── */
+.masonry-grid{columns:3;column-gap:14px}
+
+/* ── SKELETON ── */
+.skeleton-card{break-inside:avoid;margin-bottom:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.skel{background:linear-gradient(90deg,var(--surface2) 25%,rgba(255,255,255,0.04) 50%,var(--surface2) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:4px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skel-preview{width:100%;height:148px}
+.skel-body{padding:13px}
+.skel-title{height:14px;margin-bottom:8px;border-radius:4px;width:70%}
+.skel-line{height:10px;margin-bottom:5px;border-radius:4px}
+.skel-line.short{width:50%}
+.skel-tags{display:flex;gap:4px;margin:10px 0}
+.skel-tag{height:18px;width:44px;border-radius:20px}
+.skel-btn{height:44px;border-radius:var(--radius-sm);margin-top:10px}
+
+/* ── CARDS ── */
+.prompt-card{break-inside:avoid;margin-bottom:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:border-color var(--transition),box-shadow var(--transition),transform var(--transition)}
+.prompt-card:hover{border-color:rgba(200,241,53,0.25);transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,0.4)}
+.prompt-card:active{transform:scale(0.98)}
+.preview-ph{width:100%;height:148px;display:flex;align-items:center;justify-content:center;font-size:36px;position:relative;overflow:hidden}
+.preview-ph .grad{position:absolute;inset:0;opacity:0.55}
+.card-body{padding:13px}
+.card-title{font-size:13.5px;font-weight:600;margin-bottom:5px;line-height:1.4}
+.card-prompt{font-size:11.5px;color:var(--text-muted);line-height:1.6;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+.card-tag{font-size:10.5px;padding:2px 8px;border-radius:20px;background:var(--surface2);color:var(--text-muted)}
+.card-tag.ratio{background:rgba(245,166,35,0.15);color:var(--accent3)}
+.card-actions{display:flex;gap:6px;align-items:center}
+.card-btn-copy{flex:1;padding:11px 10px;background:rgba(200,241,53,0.1);color:var(--accent);border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;transition:background var(--transition);min-height:44px}
+.card-btn-copy:hover{background:rgba(200,241,53,0.2)}
+.card-btn-copy:active{background:rgba(200,241,53,0.3)}
+.card-btn-icon{width:44px;height:44px;background:var(--surface2);border:none;border-radius:var(--radius-sm);color:var(--text-muted);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--transition);flex-shrink:0}
+.card-btn-icon:hover{color:var(--text)}
+.card-btn-icon.liked{color:#f15f79;background:rgba(241,95,121,0.1)}
+.card-btn-icon:active{transform:scale(0.9)}
+
+/* ── TABBAR ── */
+.tabbar{display:none;position:fixed;bottom:0;left:0;right:0;height:calc(var(--tabbar-h) + var(--safe-b));background:rgba(17,17,24,0.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--border);z-index:100;padding-bottom:var(--safe-b)}
+.tabbar-inner{height:var(--tabbar-h);display:flex;align-items:stretch}
+.tab-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--text-dim);transition:color var(--transition);position:relative;padding:8px 0}
+.tab-item.active{color:var(--accent)}
+.tab-icon{font-size:20px;line-height:1}
+.tab-label{font-size:10px;font-weight:500}
+.tab-badge{position:absolute;top:6px;right:calc(50% - 18px);background:var(--accent);color:#0a0a0f;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+
+/* ── LAB ── */
+.lab-layout{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start}
+.builder-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.builder-panel h3{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:18px}
+.builder-group{margin-bottom:18px}
+.builder-label{font-size:10.5px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px}
+.builder-chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:8px 13px;border-radius:20px;font-size:12.5px;border:1px solid var(--border);background:var(--surface2);color:var(--text-muted);cursor:pointer;transition:all var(--transition);user-select:none;min-height:38px;display:flex;align-items:center}
+.chip:hover{border-color:rgba(200,241,53,0.3);color:var(--text)}
+.chip.selected{background:rgba(200,241,53,0.1);border-color:var(--accent);color:var(--accent)}
+.chip:active{transform:scale(0.94)}
+.weight-row{display:flex;align-items:center;gap:8px;background:var(--surface2);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:6px}
+.weight-label{font-size:12px;flex:1}
+.weight-val{font-size:11px;color:var(--accent);font-family:'Syne',monospace;font-weight:700;width:30px;text-align:right}
+input[type="range"]{-webkit-appearance:none;width:90px;height:3px;background:var(--border);border-radius:2px;outline:none}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:var(--accent);border-radius:50%;cursor:pointer}
+.preview-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:sticky;top:76px}
+.preview-box h3{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
+.prompt-output{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:13px;font-size:12px;line-height:1.7;color:var(--text);min-height:90px;word-break:break-word;font-family:'Courier New',monospace;margin-bottom:6px}
+.neg-output{background:rgba(241,95,121,0.05);border:1px solid rgba(241,95,121,0.15);border-radius:var(--radius-sm);padding:10px;font-family:'Courier New',monospace;font-size:11px;color:#f15f79;margin-bottom:10px;word-break:break-all;display:none}
+.neg-section{background:rgba(241,95,121,0.05);border:1px solid rgba(241,95,121,0.15);border-radius:var(--radius-sm);padding:12px;margin-top:4px}
+.neg-title{font-size:10.5px;color:#f15f79;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.neg-chips{display:flex;gap:4px;flex-wrap:wrap}
+.neg-chip{font-size:11px;padding:5px 9px;background:rgba(241,95,121,0.1);border:1px solid rgba(241,95,121,0.2);border-radius:20px;color:#f15f79;cursor:pointer;transition:all var(--transition);min-height:30px;display:flex;align-items:center}
+.neg-chip:hover{background:rgba(241,95,121,0.2)}
+.neg-chip.added{opacity:.45;text-decoration:line-through}
+.ratio-switcher{display:flex;gap:6px}
+.ratio-btn{flex:1;padding:8px 4px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-muted);font-size:11px;cursor:pointer;text-align:center;transition:all var(--transition);line-height:1.4;min-height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ratio-btn:hover{border-color:rgba(200,241,53,0.3)}
+.ratio-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(200,241,53,0.05)}
+.lang-toggle{display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:10px}
+.lang-btn{flex:1;padding:7px;font-size:11.5px;text-align:center;cursor:pointer;transition:all var(--transition);color:var(--text-muted)}
+.lang-btn.active{background:rgba(200,241,53,0.1);color:var(--accent)}
+
+/* Copy action row under preview */
+.copy-action-row{display:flex;gap:6px;margin-bottom:8px}
+.copy-action-row .btn{flex:1;min-height:44px;font-size:12px}
+
+/* ── AI EXPAND ── */
+.ai-expand{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px}
+.ai-input-row{display:flex;gap:8px}
+.ai-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:all var(--transition);min-height:44px;width:100%}
+.ai-input:focus{border-color:rgba(200,241,53,0.3)}
+.ai-input::placeholder{color:var(--text-dim)}
+textarea.ai-input{resize:vertical;min-height:80px}
+.ai-loading{display:none;align-items:center;gap:8px;font-size:12px;color:var(--text-muted);margin-top:10px}
+.ai-loading.visible{display:flex}
+.dot-pulse{display:flex;gap:3px}
+.dot-pulse span{width:5px;height:5px;background:var(--accent);border-radius:50%;animation:pulse 1.2s ease-in-out infinite}
+.dot-pulse span:nth-child(2){animation-delay:.2s}
+.dot-pulse span:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,80%,100%{transform:scale(0.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+
+/* AI result area with skeleton */
+.ai-skeleton{display:none;margin-top:12px}
+.ai-skeleton.visible{display:block}
+.ai-skel-line{height:12px;border-radius:4px;margin-bottom:6px}
+.ai-skel-line.w80{width:80%}
+.ai-skel-line.w60{width:60%}
+.ai-skel-line.w90{width:90%}
+
+/* Error styles */
+.api-error{color:#f15f79;font-size:12px;padding:10px 12px;background:rgba(241,95,121,0.07);border:1px solid rgba(241,95,121,0.15);border-radius:var(--radius-sm);margin-top:10px;display:flex;align-items:flex-start;gap:8px;line-height:1.5}
+.api-error-icon{flex-shrink:0;font-size:14px}
+
+/* ── PROFILE ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px}
+.stat-num{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--accent)}
+.stat-label{font-size:11px;color:var(--text-muted);margin-top:2px}
+
+/* ── DATA MANAGEMENT BAR ── */
+.data-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.data-bar-label{font-size:12px;color:var(--text-muted);flex:1;min-width:120px}
+.data-bar-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ── IMPORT / EXPORT ── */
+#import-file-input{display:none}
+.import-drop{border:2px dashed var(--border);border-radius:var(--radius-sm);padding:28px;text-align:center;cursor:pointer;transition:all var(--transition);margin-top:12px}
+.import-drop:hover,.import-drop.dragover{border-color:rgba(200,241,53,0.4);background:rgba(200,241,53,0.03)}
+.import-drop p{font-size:13px;color:var(--text-muted);margin-top:8px}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.72);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);z-index:200;display:none;align-items:flex-end;justify-content:center;padding:0}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:20px 20px 0 0;width:100%;max-height:88vh;overflow-y:auto;padding:8px 20px calc(20px + var(--safe-b));animation:slideUp .28s cubic-bezier(0.32,0.72,0,1)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal::before{content:'';display:block;width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700}
+.modal-close{width:32px;height:32px;background:var(--surface2);border:none;border-radius:6px;cursor:pointer;color:var(--text-muted);font-size:14px;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{color:var(--text)}
+.modal-prompt-full{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;font-size:13px;line-height:1.8;color:var(--text);font-family:'Courier New',monospace;margin-bottom:10px;word-break:break-all;max-height:160px;overflow-y:auto}
+.modal-neg-box{background:rgba(241,95,121,0.05);border:1px solid rgba(241,95,121,0.2);border-radius:var(--radius-sm);padding:12px;font-family:'Courier New',monospace;font-size:11.5px;color:#f15f79;margin-bottom:10px;display:none}
+.modal-meta{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.meta-pill{font-size:11px;padding:4px 10px;border-radius:20px;background:var(--surface2);color:var(--text-muted)}
+.history-section{margin-top:18px;border-top:1px solid var(--border);padding-top:18px}
+.history-item{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px}
+.history-ver{font-family:'Syne',monospace;font-size:10px;color:var(--accent);background:rgba(200,241,53,0.08);padding:2px 7px;border-radius:4px;white-space:nowrap}
+.history-text{color:var(--text-muted);line-height:1.6}
+
+/* Detail copy buttons row */
+.detail-copy-row{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.detail-copy-row .btn{flex:1;min-height:48px;font-size:12.5px;min-width:100px}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:calc(var(--tabbar-h) + var(--safe-b) + 12px);left:50%;transform:translateX(-50%) translateY(12px);background:var(--accent);color:#0a0a0f;padding:10px 20px;border-radius:var(--radius-sm);font-size:13px;font-weight:700;z-index:300;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.error{background:#f15f79}
+
+/* ── EMPTY ── */
+.empty-state{text-align:center;padding:64px 20px;color:var(--text-dim)}
+.empty-state .empty-icon{font-size:38px;margin-bottom:14px}
+.empty-state p{font-size:13.5px;line-height:1.8}
+
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--text-dim);border-radius:10px}
+
+/* ── BREAKPOINTS ── */
+@media(max-width:1200px){.masonry-grid{columns:2}.stats-row{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:640px){
+  .modal-overlay{align-items:center;padding:24px}
+  .modal{border-radius:20px;max-width:580px;padding:28px;animation:modalIn .22s cubic-bezier(0.34,1.56,0.64,1)}
+  .modal::before{display:none}
+  @keyframes modalIn{from{opacity:0;transform:scale(0.95) translateY(10px)}to{opacity:1;transform:none}}
+  .toast{bottom:24px}
+}
+@media(max-width:767px){
+  .sidebar{display:none}
+  .main{margin-left:0}
+  .header{display:none}
+  .mobile-header{display:flex}
+  .tabbar{display:block}
+  .page{padding:14px 14px calc(var(--tabbar-h) + var(--safe-b) + 20px)}
+  .masonry-grid{columns:1}
+  .section-title{font-size:18px}
+  .lab-layout{grid-template-columns:1fr}
+  .preview-box{position:static}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .filter-tag{padding:8px 14px;font-size:13px}
+  .data-bar{flex-direction:column;align-items:flex-start}
+  .section-actions{margin-left:0;width:100%}
+}
+@media(max-width:375px){.page{padding-left:12px;padding-right:12px}}
+</style>
+
+<!-- PWA Meta — auto-injected by PWA 打包神器 -->
+
+<meta name="description" content="Prompt 生成器">
+
+
+
+
+
+
+
+<script>if('serviceWorker'in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').then(function(r){console.log('[SW] registered:',r.scope)}).catch(function(e){console.warn('[SW] failed:',e)});});}</script>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-mark">🪄 Prompt<span>Vault</span></div>
+    <div class="logo-sub">AI Prompt Library</div>
+  </div>
+  <div class="nav-section">瀏覽</div>
+  <div class="nav-item active" data-page="explore"><span class="icon">✦</span> 探索 Explore <span class="badge" id="sb-explore-badge">12</span></div>
+  <div class="nav-item" data-page="categories"><span class="icon">⊞</span> 分類 Categories</div>
+  <div class="nav-section">工具</div>
+  <div class="nav-item" data-page="lab"><span class="icon">⚗</span> 創作工坊 Lab</div>
+  <div class="nav-section">個人</div>
+  <div class="nav-item" data-page="favorites"><span class="icon">♥</span> 我的收藏 <span class="badge" id="sb-fav-badge">0</span></div>
+  <div class="nav-item" data-page="profile"><span class="icon">◎</span> 個人檔案</div>
+  <div class="sidebar-footer">
+    <div class="api-badge" id="api-config-btn">
+      <div class="api-label">🤖 Claude API</div>
+      <div class="api-status" id="api-status-text">點擊設定 API 金鑰</div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <!-- Desktop header -->
+  <header class="header">
+    <div class="search-box">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="search-desktop" placeholder="搜尋提示語、風格、主題…">
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost" onclick="openAddModal()">＋ 新增</button>
+      <button class="btn btn-accent" onclick="navigateTo('lab')">⚗ 開始創作</button>
+    </div>
+  </header>
+
+  <!-- Mobile header -->
+  <header class="mobile-header">
+    <div class="mobile-logo">Prompt<span>Vault</span></div>
+    <div class="search-box">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="search-mobile" placeholder="搜尋…">
+    </div>
+    <button class="mobile-add-btn" onclick="openAddModal()">＋</button>
+  </header>
+
+  <!-- EXPLORE -->
+  <div class="page active" id="page-explore">
+    <div class="section-header">
+      <div class="section-title">探索提示語</div>
+      <div class="section-count" id="explore-count">12 個</div>
+      <div class="section-actions">
+        <button class="btn btn-ghost btn-sm" onclick="exportJSON()">⬇ 匯出</button>
+        <button class="btn btn-ghost btn-sm" onclick="openModal('modal-import')">⬆ 匯入</button>
+      </div>
+    </div>
+    <div class="filter-row" id="filter-row">
+      <div class="filter-tag active" data-filter="all">全部</div>
+      <div class="filter-tag" data-filter="social">社群媒體</div>
+      <div class="filter-tag" data-filter="product">商品攝影</div>
+      <div class="filter-tag" data-filter="poster">活動海報</div>
+      <div class="filter-tag" data-filter="logo">Logo</div>
+      <div class="filter-tag" data-filter="portrait">人像</div>
+      <div class="filter-tag" data-filter="landscape">風景</div>
+      <div class="filter-tag" data-filter="1:1">1:1</div>
+      <div class="filter-tag" data-filter="16:9">16:9</div>
+      <div class="filter-tag" data-filter="9:16">9:16</div>
+    </div>
+    <div class="masonry-grid" id="prompt-grid"></div>
+  </div>
+
+  <!-- CATEGORIES -->
+  <div class="page" id="page-categories">
+    <div class="section-header"><div class="section-title">分類瀏覽</div></div>
+    <div id="categories-content"></div>
+  </div>
+
+  <!-- LAB -->
+  <div class="page" id="page-lab">
+    <div class="section-header"><div class="section-title">⚗ 創作工坊</div></div>
+    <div class="ai-expand">
+      <div class="builder-label" style="margin-bottom:10px">🤖 AI 提示語擴寫</div>
+      <div class="ai-input-row">
+        <input class="ai-input" id="ai-input" placeholder="輸入關鍵字，例如：貓、太空、科技感…">
+        <button class="btn btn-accent" id="ai-btn" onclick="aiExpand()">✦ 擴寫</button>
+      </div>
+      <div class="ai-loading" id="ai-loading"><div class="dot-pulse"><span></span><span></span><span></span></div>Claude 正在生成…</div>
+      <!-- Skeleton while loading -->
+      <div class="ai-skeleton" id="ai-skeleton">
+        <div style="height:12px;margin-top:14px;margin-bottom:4px;font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase">預覽</div>
+        <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:13px">
+          <div class="skel ai-skel-line w90"></div>
+          <div class="skel ai-skel-line w80"></div>
+          <div class="skel ai-skel-line w60"></div>
+        </div>
+      </div>
+      <div id="ai-result"></div>
+    </div>
+    <div class="lab-layout">
+      <div class="builder-panel">
+        <h3>🔧 模組化組合器</h3>
+        <div class="builder-group"><div class="builder-label">主體 Subject</div><div class="builder-chips" id="chips-subject"></div></div>
+        <div class="builder-group"><div class="builder-label">風格 Style</div><div class="builder-chips" id="chips-style"></div></div>
+        <div class="builder-group"><div class="builder-label">燈光 Lighting</div><div class="builder-chips" id="chips-lighting"></div></div>
+        <div class="builder-group"><div class="builder-label">鏡頭 Camera</div><div class="builder-chips" id="chips-camera"></div></div>
+        <div class="builder-group"><div class="builder-label">渲染 Render</div><div class="builder-chips" id="chips-render"></div></div>
+        <div class="builder-group">
+          <div class="builder-label">比例 Aspect Ratio</div>
+          <div class="ratio-switcher" id="ratio-switcher">
+            <div class="ratio-btn active" data-ratio="--ar 1:1">1:1<br><small>IG</small></div>
+            <div class="ratio-btn" data-ratio="--ar 16:9">16:9<br><small>YT</small></div>
+            <div class="ratio-btn" data-ratio="--ar 9:16">9:16<br><small>限動</small></div>
+            <div class="ratio-btn" data-ratio="--ar 4:3">4:3</div>
+          </div>
+        </div>
+        <div class="builder-group"><div class="builder-label">關鍵字權重</div><div id="weight-rows"></div></div>
+        <div class="neg-section"><div class="neg-title">⊖ 負向提示語</div><div class="neg-chips" id="neg-chips"></div></div>
+      </div>
+      <div class="preview-box">
+        <h3>輸出預覽</h3>
+        <div class="lang-toggle">
+          <div class="lang-btn active" data-lang="en">English</div>
+          <div class="lang-btn" data-lang="zh">中文</div>
+        </div>
+        <div class="builder-label" style="margin-bottom:4px">正向提示</div>
+        <div class="prompt-output" id="prompt-preview"><span style="color:var(--text-dim)">請選取左方選項…</span></div>
+        <div class="builder-label" style="margin-bottom:4px;color:#f15f79">負向提示</div>
+        <div class="neg-output" id="neg-preview"></div>
+        <!-- Separate copy buttons for positive / negative -->
+        <div class="copy-action-row">
+          <button class="btn btn-accent" onclick="copyBuiltPrompt('pos')">📋 複製正向</button>
+          <button class="btn btn-ghost" id="copy-neg-btn" onclick="copyBuiltPrompt('neg')" style="opacity:.4;cursor:default" disabled>⊖ 複製負向</button>
+        </div>
+        <button class="btn btn-ghost" style="width:100%;min-height:40px;font-size:12px" onclick="saveBuiltPrompt()">💾 儲存到資料庫</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAVORITES -->
+  <div class="page" id="page-favorites">
+    <div class="section-header">
+      <div class="section-title">♥ 我的收藏</div>
+      <div class="section-count" id="fav-count-display">0 個</div>
+    </div>
+    <div class="masonry-grid" id="favorites-grid"></div>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="page" id="page-profile">
+    <div class="section-header"><div class="section-title">◎ 個人檔案</div></div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num" id="stat-saved">0</div><div class="stat-label">已收藏</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-copied">0</div><div class="stat-label">累計複製</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-built">0</div><div class="stat-label">工坊建立</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-total">12</div><div class="stat-label">資料庫總量</div></div>
+    </div>
+    <!-- Data management -->
+    <div class="data-bar">
+      <div class="data-bar-label">🗄 資料管理 · localStorage 備份</div>
+      <div class="data-bar-actions">
+        <button class="btn btn-ghost btn-sm" onclick="exportJSON()">⬇ 匯出 JSON</button>
+        <button class="btn btn-ghost btn-sm" onclick="openModal('modal-import')">⬆ 匯入 JSON</button>
+        <button class="btn btn-ghost btn-sm" style="color:#f15f79;border-color:rgba(241,95,121,0.3)" onclick="confirmClearCustom()">🗑 清除自建</button>
+      </div>
+    </div>
+    <div class="masonry-grid" id="history-grid"></div>
+  </div>
+</main>
+
+<!-- TABBAR -->
+<nav class="tabbar">
+  <div class="tabbar-inner">
+    <div class="tab-item active" data-page="explore"><div class="tab-icon">✦</div><div class="tab-label">探索</div></div>
+    <div class="tab-item" data-page="categories"><div class="tab-icon">⊞</div><div class="tab-label">分類</div></div>
+    <div class="tab-item" data-page="lab"><div class="tab-icon">⚗</div><div class="tab-label">工坊</div></div>
+    <div class="tab-item" data-page="favorites">
+      <div class="tab-icon">♥</div><div class="tab-label">收藏</div>
+      <div class="tab-badge" id="tab-fav-badge" style="display:none">0</div>
+    </div>
+    <div class="tab-item" data-page="profile"><div class="tab-icon">◎</div><div class="tab-label">我的</div></div>
+  </div>
+</nav>
+</div>
+
+<!-- MODAL: Detail -->
+<div class="modal-overlay" id="modal-detail">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">提示語詳情</div>
+      <button class="modal-close" onclick="closeModal('modal-detail')">✕</button>
+    </div>
+    <div class="modal-meta" id="modal-meta"></div>
+    <div class="builder-label" style="margin-bottom:4px">正向提示語</div>
+    <div class="modal-prompt-full" id="modal-prompt-full"></div>
+    <div id="modal-neg-label" style="display:none;font-size:10.5px;color:#f15f79;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">負向提示語</div>
+    <div class="modal-neg-box" id="modal-neg"></div>
+    <!-- Separate copy: positive / negative / all -->
+    <div class="detail-copy-row">
+      <button class="btn btn-accent" onclick="copyModalPrompt('pos')">📋 複製正向</button>
+      <button class="btn btn-ghost" id="modal-copy-neg-btn" onclick="copyModalPrompt('neg')">⊖ 複製負向</button>
+      <button class="btn btn-ghost" id="modal-fav-btn" onclick="toggleFavFromModal()">♥ 收藏</button>
+    </div>
+    <div class="history-section" id="modal-history" style="display:none"></div>
+  </div>
+</div>
+
+<!-- MODAL: API -->
+<div class="modal-overlay" id="modal-api">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">🔑 設定 Claude API</div>
+      <button class="modal-close" onclick="closeModal('modal-api')">✕</button>
+    </div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;line-height:1.7">輸入 Anthropic API 金鑰以啟用 AI 擴寫功能。金鑰只存在本地 localStorage，不會傳送至任何伺服器。</p>
+    <input class="ai-input" id="api-key-input" type="password" placeholder="sk-ant-…" style="margin-bottom:8px">
+    <!-- Masked display of current key -->
+    <div id="current-key-display" style="display:none;font-size:11px;color:var(--text-muted);margin-bottom:12px;font-family:'Courier New',monospace;padding:6px 10px;background:var(--surface2);border-radius:6px"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-accent" style="flex:1;min-height:48px" onclick="saveApiKey()">儲存金鑰</button>
+      <button class="btn btn-ghost" style="min-height:48px;color:#f15f79;border-color:rgba(241,95,121,0.3)" id="clear-key-btn" onclick="clearApiKey()" style="display:none">清除</button>
+      <button class="btn btn-ghost" style="min-height:48px" onclick="closeModal('modal-api')">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Add -->
+<div class="modal-overlay" id="modal-add">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">＋ 新增提示語</div>
+      <button class="modal-close" onclick="closeModal('modal-add')">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <input class="ai-input" id="add-title" placeholder="名稱（例如：奶油色商品攝影）">
+      <textarea class="ai-input" id="add-prompt" rows="4" placeholder="正向提示語（英文）…"></textarea>
+      <textarea class="ai-input" id="add-neg" rows="2" placeholder="負向提示語（選填，例如：blurry, low quality）…"></textarea>
+      <input class="ai-input" id="add-category" placeholder="分類：social / product / poster / logo / portrait / landscape">
+      <input class="ai-input" id="add-tags" placeholder="標籤（逗號分隔，例如：極簡, 1:1）">
+      <button class="btn btn-accent" style="min-height:48px" onclick="saveNewPrompt()">✦ 新增到資料庫</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Import -->
+<div class="modal-overlay" id="modal-import">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">⬆ 匯入 JSON</div>
+      <button class="modal-close" onclick="closeModal('modal-import')">✕</button>
+    </div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:4px;line-height:1.7">支援之前匯出的 PromptVault JSON 檔案。匯入的提示語將<strong style="color:var(--text)">合併</strong>到現有資料庫（不會刪除現有資料）。</p>
+    <div class="import-drop" id="import-drop" onclick="document.getElementById('import-file-input').click()">
+      <div style="font-size:28px">📂</div>
+      <p>點擊選取 JSON 檔案<br><span style="font-size:11px">或拖拉到此區域</span></p>
+    </div>
+    <input type="file" id="import-file-input" accept=".json">
+    <div id="import-status" style="margin-top:10px;font-size:12px;color:var(--text-muted)"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────
+var BASE = [
+  {id:1,title:"奶油色極簡商品攝影",category:"product",ratio:"1:1",
+   prompt:"A minimalist product shot of a white ceramic mug on a cream linen surface, soft natural window light from the left, shallow depth of field, muted beige tones, clean background, professional food styling, 8K photography, shot with Sony A7R IV",
+   neg:"ugly, deformed, blurry, low quality, watermark, text",
+   tags:["極簡","商品","奶油色","自然光"],gradient:"linear-gradient(135deg,#f5e6d3,#e8d5b7)",emoji:"☕",
+   versions:[{ver:"v1",change:"移除 studio light 改用 window light"},{ver:"v2",change:"新增 cream linen surface"}]},
+  {id:2,title:"Cyberpunk 城市霓虹夜景",category:"landscape",ratio:"16:9",
+   prompt:"Cinematic wide-angle shot of a cyberpunk city at night, towering neon-lit skyscrapers, rain-soaked streets reflecting purple and cyan neon signs, atmospheric fog, volumetric light rays, dramatic composition, Blade Runner aesthetic, unreal engine 5 render, photorealistic",
+   neg:"daytime, bright colors, cartoon, anime",
+   tags:["Cyberpunk","夜景","霓虹","16:9"],gradient:"linear-gradient(135deg,#1a0533,#0d2a4a)",emoji:"🌆",
+   versions:[{ver:"v1",change:"加入 Blade Runner aesthetic"}]},
+  {id:3,title:"黑金奢華Logo設計",category:"logo",ratio:"1:1",
+   prompt:"Premium minimalist logo design, black and gold color palette, elegant serif typography, clean vector style, luxury brand identity, centered composition, pure white background, professional graphic design, high contrast",
+   neg:"gradient, shadow, 3D effect, cluttered",
+   tags:["Logo","黑金","奢華","極簡"],gradient:"linear-gradient(135deg,#1a1200,#3d2800)",emoji:"⭐",
+   versions:[{ver:"v1",change:"初版"},{ver:"v2",change:"強調 vector style"},{ver:"v3",change:"gradient 移至負向提示"}]},
+  {id:4,title:"IG 限動人像 - 日系清新",category:"portrait",ratio:"9:16",
+   prompt:"Portrait photography, young woman in a field of white flowers, soft golden hour backlight, film grain, warm pastel tones, shallow depth of field, Fujifilm Superia 400 film simulation, dreamy bokeh, natural pose, Japanese aesthetic",
+   neg:"harsh shadows, overexposed, skin retouching, artificial",
+   tags:["人像","日系","金時","9:16"],gradient:"linear-gradient(135deg,#fff3e0,#fce4ec)",emoji:"🌸",
+   versions:[{ver:"v1",change:"初版"}]},
+  {id:5,title:"3D 黏土風格插圖",category:"social",ratio:"1:1",
+   prompt:"3D clay art style illustration, cute character made of colorful clay, soft pastel colors, studio lighting from above, smooth surface texture, kawaii aesthetic, clean white background, Blender render, trending on Behance",
+   neg:"photo realistic, dark colors, scary",
+   tags:["3D","黏土","可愛","社群"],gradient:"linear-gradient(135deg,#e1f5fe,#f3e5f5)",emoji:"🎨",
+   versions:[{ver:"v1",change:"初版"},{ver:"v2",change:"新增 trending on Behance"}]},
+  {id:6,title:"電商 Banner - 科技產品",category:"product",ratio:"16:9",
+   prompt:"Product photography for e-commerce, sleek wireless earbuds floating in mid-air, dark background with soft blue gradient, dynamic studio lighting highlighting metallic surfaces, clean composition, advertising shot, 4K resolution, professional commercial photography",
+   neg:"cluttered background, amateur, low resolution",
+   tags:["電商","科技","產品","16:9"],gradient:"linear-gradient(135deg,#0d1117,#1a2744)",emoji:"🎧",
+   versions:[{ver:"v1",change:"初版"}]},
+  {id:7,title:"活動海報 - EDM 音樂節",category:"poster",ratio:"9:16",
+   prompt:"Event poster design for an EDM music festival, neon laser lights, dark atmospheric background, typography with glowing effects, dynamic energy, crowd silhouettes, purple magenta color scheme, professional graphic design, editorial layout",
+   neg:"daytime, pastel colors, low energy",
+   tags:["海報","EDM","霓虹","9:16"],gradient:"linear-gradient(135deg,#1a0028,#2d0a4e)",emoji:"🎵",
+   versions:[{ver:"v1",change:"初版"}]},
+  {id:8,title:"極簡北歐室內設計",category:"landscape",ratio:"4:3",
+   prompt:"Interior design photography, Scandinavian minimalist living room, white walls, warm wood tones, natural linen textiles, monstera plant, soft diffused daylight, clean lines, cozy hygge atmosphere, architectural photography, Canon 24mm lens",
+   neg:"dark, cluttered, colorful, maximalist",
+   tags:["室內","北歐","極簡","自然光"],gradient:"linear-gradient(135deg,#f5f0eb,#e8e0d8)",emoji:"🏠",
+   versions:[{ver:"v1",change:"初版"},{ver:"v2",change:"加入 hygge atmosphere"}]},
+  {id:9,title:"復古 Y2K 風格社群貼圖",category:"social",ratio:"1:1",
+   prompt:"Y2K aesthetic digital art, retro futuristic design, chrome metallic textures, bubblegum pink and electric blue color palette, pixel elements, holographic gradients, 2000s nostalgia, sticker design, clean vector illustration",
+   neg:"modern flat design, muted colors, minimalism",
+   tags:["Y2K","復古","社群","貼圖"],gradient:"linear-gradient(135deg,#ff9fd6,#9fd6ff)",emoji:"✨",
+   versions:[{ver:"v1",change:"初版"}]},
+  {id:10,title:"美食攝影 - 咖啡與可頌",category:"product",ratio:"1:1",
+   prompt:"Food photography, a golden croissant beside a latte art coffee cup, overhead flat lay composition, warm morning light, wooden table surface, light scattered crumbs, lifestyle photography, soft shadows, aperture f/2.8, film-inspired editing",
+   neg:"artificial light, messy, synthetic food",
+   tags:["美食","咖啡","flat lay","生活感"],gradient:"linear-gradient(135deg,#3d2010,#6b3a1f)",emoji:"🥐",
+   versions:[{ver:"v1",change:"初版"},{ver:"v2",change:"加入 film-inspired editing"}]},
+  {id:11,title:"水彩植物插畫",category:"social",ratio:"1:1",
+   prompt:"Delicate watercolor botanical illustration, eucalyptus branches with soft green leaves, gentle washes of sage green and warm beige, white paper texture, fine ink outlines, traditional illustration style, spring collection, elegant and airy composition",
+   neg:"digital art, CGI, dark colors, bold outlines",
+   tags:["水彩","植物","插畫","典雅"],gradient:"linear-gradient(135deg,#e8f5e9,#f5f5dc)",emoji:"🌿",
+   versions:[{ver:"v1",change:"初版"}]},
+  {id:12,title:"電影感人像 - 硬打光",category:"portrait",ratio:"9:16",
+   prompt:"Cinematic portrait, dramatic side lighting, deep shadows, high contrast black and white, film noir aesthetic, strong jawline, intense gaze, grain texture, 35mm film look, Kodak Tri-X 400, editorial photography",
+   neg:"soft light, colorful, happy expression, commercial",
+   tags:["人像","電影感","黑白","戲劇光"],gradient:"linear-gradient(135deg,#1a1a1a,#333333)",emoji:"🎬",
+   versions:[{ver:"v1",change:"初版"}]}
+];
+
+var CAT_META = {
+  social:{label:'社群媒體',emoji:'📱',desc:'Instagram、YouTube、TikTok 等平台專用'},
+  product:{label:'商品攝影',emoji:'📦',desc:'電商與產品展示提示語'},
+  poster:{label:'活動海報',emoji:'🎪',desc:'活動、演唱會、展覽海報設計'},
+  logo:{label:'Logo 設計',emoji:'⭐',desc:'品牌識別與標誌設計'},
+  portrait:{label:'人像攝影',emoji:'👤',desc:'人物與角色攝影風格'},
+  landscape:{label:'風景場景',emoji:'🌄',desc:'自然風景與城市場景'}
+};
+
+var BD = {
+  subject:['商品','人像','風景','食物','建築','動物','概念圖','角色設計','海報','Logo'],
+  style:['極簡主義','Cyberpunk','日系清新','3D黏土','水彩插畫','電影感','Y2K復古','黑金奢華','北歐風','暗黑系'],
+  lighting:['柔和自然光','黃金時刻','硬打光','攝影棚燈光','霓虹環境光','窗邊側光','夜景街燈','俯光'],
+  camera:['超廣角鏡頭','50mm定焦','微距鏡頭','俯拍','仰拍','景深淺'],
+  render:['Unreal Engine 5','Blender渲染','電影攝影','8K照片','Octane Render']
+};
+
+var ZH_EN={'商品':'product shot','人像':'portrait','風景':'landscape','食物':'food photography','建築':'architecture','動物':'animal','概念圖':'concept art','角色設計':'character design','海報':'poster design','Logo':'logo design','極簡主義':'minimalist style','Cyberpunk':'cyberpunk aesthetic','日系清新':'Japanese fresh aesthetic','3D黏土':'3D clay art style','水彩插畫':'watercolor illustration','電影感':'cinematic','Y2K復古':'Y2K retro aesthetic','黑金奢華':'black and gold luxury','北歐風':'Scandinavian style','暗黑系':'dark moody','柔和自然光':'soft natural light','黃金時刻':'golden hour lighting','硬打光':'harsh dramatic lighting','攝影棚燈光':'studio lighting','霓虹環境光':'neon ambient light','窗邊側光':'window side light','夜景街燈':'night street lighting','俯光':'overhead lighting','超廣角鏡頭':'ultra wide angle lens','50mm定焦':'50mm prime lens','微距鏡頭':'macro lens','俯拍':'bird eye view','仰拍':'low angle shot','景深淺':'shallow depth of field','Unreal Engine 5':'Unreal Engine 5','Blender渲染':'Blender render','電影攝影':'professional film photography','8K照片':'8K photography','Octane Render':'Octane Render'};
+
+var NEG_KW=['ugly','deformed','blurry','low quality','watermark','text overlay','extra fingers','bad anatomy','overexposed','noise'];
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+var favs       = JSON.parse(localStorage.getItem('pv_favs')||'[]');
+var copies     = parseInt(localStorage.getItem('pv_copies')||'0');
+var built      = parseInt(localStorage.getItem('pv_built')||'0');
+var custom     = JSON.parse(localStorage.getItem('pv_custom')||'[]');
+var apiKey     = localStorage.getItem('pv_apikey')||'';
+var allPrompts = BASE.concat(custom);
+var curFilter  = 'all';
+var curModalId = null;
+var bState     = {subject:[],style:[],lighting:[],camera:[],render:[]};
+var wts        = {};
+var negSel     = [];
+var selRatio   = '--ar 1:1';
+var selLang    = 'en';
+var debounceTimer = null;
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+function init() {
+  bindNav();
+  bindFilters();
+  bindSearch();
+  initBuilder();
+  initRatio();
+  initLang();
+  initImport();
+  renderGrid('prompt-grid', allPrompts);
+  updateCounts();
+  updateApiStatus();
+  renderCats();
+  document.getElementById('api-config-btn').onclick = function(){ showApiModal(); };
+  document.querySelectorAll('.modal-overlay').forEach(function(o){
+    o.addEventListener('click', function(e){ if(e.target===this) this.classList.remove('open'); });
+  });
+}
+
+// ── NAV ───────────────────────────────────────────────────────────────────
+function bindNav() {
+  document.querySelectorAll('[data-page]').forEach(function(el){
+    el.addEventListener('click', function(){ navigateTo(this.dataset.page); });
+  });
+}
+function navigateTo(p) {
+  document.querySelectorAll('.sidebar .nav-item').forEach(function(el){ el.classList.toggle('active',el.dataset.page===p); });
+  document.querySelectorAll('.tab-item').forEach(function(el){ el.classList.toggle('active',el.dataset.page===p); });
+  document.querySelectorAll('.page').forEach(function(el){ el.classList.toggle('active',el.id==='page-'+p); });
+  if(p==='favorites') renderFavs();
+  if(p==='profile')   renderProfile();
+  if(p==='categories') renderCats();
+  window.scrollTo(0,0);
+}
+
+// ── SEARCH WITH DEBOUNCE ──────────────────────────────────────────────────
+function bindSearch() {
+  function onInput(e) {
+    var v = e.target.value;
+    document.getElementById('search-desktop').value = v;
+    document.getElementById('search-mobile').value  = v;
+    // Debounce: wait 280ms after last keystroke
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(applyFilter, 280);
+  }
+  document.getElementById('search-desktop').addEventListener('input', onInput);
+  document.getElementById('search-mobile').addEventListener('input', onInput);
+}
+
+// ── FILTERS ───────────────────────────────────────────────────────────────
+function bindFilters() {
+  document.querySelectorAll('.filter-tag').forEach(function(el){
+    el.addEventListener('click', function(){
+      document.querySelectorAll('.filter-tag').forEach(function(t){ t.classList.remove('active'); });
+      this.classList.add('active');
+      curFilter = this.dataset.filter;
+      applyFilter();
+    });
+  });
+}
+function applyFilter() {
+  var q = (document.getElementById('search-desktop').value||'').toLowerCase().trim();
+  var f = allPrompts.filter(function(p){
+    var mf = curFilter==='all'||p.category===curFilter||p.ratio===curFilter||p.tags.some(function(t){return t===curFilter;});
+    var ms = !q||p.title.toLowerCase().includes(q)||p.prompt.toLowerCase().includes(q)||p.tags.join(' ').toLowerCase().includes(q)||(p.neg&&p.neg.toLowerCase().includes(q));
+    return mf&&ms;
+  });
+  renderGrid('prompt-grid', f);
+  document.getElementById('explore-count').textContent = f.length+' 個';
+}
+
+// ── RENDER GRID ───────────────────────────────────────────────────────────
+function renderSkeletons(cid, n) {
+  var c = document.getElementById(cid); if(!c) return;
+  var html = '';
+  for(var i=0;i<n;i++){
+    html += '<div class="skeleton-card"><div class="skel skel-preview"></div><div class="skel-body"><div class="skel skel-title"></div><div class="skel skel-line"></div><div class="skel skel-line short"></div><div class="skel-tags"><div class="skel skel-tag"></div><div class="skel skel-tag"></div></div><div class="skel skel-btn"></div></div></div>';
+  }
+  c.innerHTML = html;
+}
+
+function renderGrid(cid, data, withSkeleton) {
+  var c = document.getElementById(cid); if(!c) return;
+  if(withSkeleton){ renderSkeletons(cid, 6); setTimeout(function(){ _renderGrid(cid, data); }, 300); }
+  else { _renderGrid(cid, data); }
+}
+
+function _renderGrid(cid, data) {
+  var c = document.getElementById(cid); if(!c) return;
+  if(!data.length){ c.innerHTML='<div class="empty-state"><div class="empty-icon">🔍</div><p>找不到符合的提示語</p></div>'; return; }
+  c.innerHTML = data.map(cardHtml).join('');
+  c.querySelectorAll('.card-btn-copy').forEach(function(b){
+    b.addEventListener('click', function(e){ e.stopPropagation(); copyPrompt(+this.closest('.prompt-card').dataset.id); });
+  });
+  c.querySelectorAll('.like-btn').forEach(function(b){
+    b.addEventListener('click', function(e){
+      e.stopPropagation();
+      var id=+this.closest('.prompt-card').dataset.id;
+      toggleFav(id);
+      this.classList.toggle('liked', favs.indexOf(id)>-1);
+    });
+  });
+  c.querySelectorAll('.prompt-card').forEach(function(card){
+    card.addEventListener('click', function(){ openDetail(+this.dataset.id); });
+  });
+}
+
+function cardHtml(p) {
+  var isFav=favs.indexOf(p.id)>-1;
+  var tags=p.tags.map(function(t){return '<span class="card-tag'+(t.includes(':')||['1:1','16:9','9:16','4:3'].indexOf(t)>-1?' ratio':'')+'">'+t+'</span>';}).join('');
+  return '<div class="prompt-card" data-id="'+p.id+'">'+
+    '<div class="preview-ph"><div class="grad" style="background:'+p.gradient+'"></div><span style="position:relative;z-index:1">'+p.emoji+'</span></div>'+
+    '<div class="card-body"><div class="card-title">'+p.title+'</div>'+
+    '<div class="card-prompt">'+p.prompt.substring(0,95)+'…</div>'+
+    '<div class="card-tags">'+tags+'</div>'+
+    '<div class="card-actions"><button class="card-btn-copy">📋 複製提示語</button>'+
+    '<button class="card-btn-icon like-btn'+(isFav?' liked':'')+'">♥</button>'+
+    '</div></div></div>';
+}
+
+// ── CATEGORIES (with skeleton) ────────────────────────────────────────────
+function renderCats() {
+  var c = document.getElementById('categories-content');
+  // Skeleton first
+  var skelHtml = '';
+  Object.keys(CAT_META).forEach(function(cat){
+    var m=CAT_META[cat];
+    skelHtml+='<div style="margin-bottom:28px"><div class="section-header"><div class="section-title">'+m.emoji+' '+m.label+'</div></div>'+
+      '<div class="masonry-grid" id="cat-skel-'+cat+'"></div></div>';
+  });
+  c.innerHTML = skelHtml;
+  Object.keys(CAT_META).forEach(function(cat){ renderSkeletons('cat-skel-'+cat,3); });
+  // Real data after brief delay
+  setTimeout(function(){
+    var html='';
+    Object.keys(CAT_META).forEach(function(cat){
+      var m=CAT_META[cat];
+      var list=allPrompts.filter(function(p){return p.category===cat;});
+      if(!list.length) return;
+      html+='<div style="margin-bottom:28px"><div class="section-header"><div class="section-title">'+m.emoji+' '+m.label+'</div><div class="section-count">'+list.length+'</div></div>'+
+        '<p style="font-size:12.5px;color:var(--text-muted);margin-bottom:14px">'+m.desc+'</p>'+
+        '<div class="masonry-grid" id="cat-'+cat+'"></div></div>';
+    });
+    c.innerHTML = html;
+    Object.keys(CAT_META).forEach(function(cat){
+      _renderGrid('cat-'+cat, allPrompts.filter(function(p){return p.category===cat;}));
+    });
+  }, 350);
+}
+
+// ── FAV ───────────────────────────────────────────────────────────────────
+function toggleFav(id) {
+  var i=favs.indexOf(id);
+  if(i>-1){favs.splice(i,1);showToast('已取消收藏');}
+  else{favs.push(id);showToast('✦ 已加入收藏！');}
+  localStorage.setItem('pv_favs',JSON.stringify(favs));
+  updateCounts();
+}
+function renderFavs() {
+  var list=allPrompts.filter(function(p){return favs.indexOf(p.id)>-1;});
+  _renderGrid('favorites-grid', list);
+  document.getElementById('fav-count-display').textContent=list.length+' 個';
+}
+
+// ── PROFILE ───────────────────────────────────────────────────────────────
+function renderProfile() {
+  document.getElementById('stat-saved').textContent  = favs.length;
+  document.getElementById('stat-copied').textContent = copies;
+  document.getElementById('stat-built').textContent  = built;
+  document.getElementById('stat-total').textContent  = allPrompts.length;
+  _renderGrid('history-grid', allPrompts.filter(function(p){return favs.indexOf(p.id)>-1;}));
+}
+
+// ── COUNTS ────────────────────────────────────────────────────────────────
+function updateCounts() {
+  var n=favs.length;
+  document.getElementById('sb-fav-badge').textContent=n;
+  document.getElementById('sb-explore-badge').textContent=allPrompts.length;
+  document.getElementById('fav-count-display').textContent=n+' 個';
+  var tb=document.getElementById('tab-fav-badge');
+  tb.textContent=n; tb.style.display=n>0?'flex':'none';
+  document.getElementById('stat-saved').textContent=n;
+}
+
+// ── COPY PROMPT ───────────────────────────────────────────────────────────
+function copyPrompt(id) {
+  var p=allPrompts.find(function(x){return x.id===id;});
+  if(!p) return;
+  navigator.clipboard.writeText(p.prompt).then(function(){
+    copies++; localStorage.setItem('pv_copies',copies);
+    showToast('✅ 已複製到剪貼簿！');
+  });
+}
+
+// ── DETAIL MODAL ──────────────────────────────────────────────────────────
+function openDetail(id) {
+  var p=allPrompts.find(function(x){return x.id===id;});
+  if(!p) return;
+  curModalId=id;
+  document.getElementById('modal-title').textContent=p.title;
+  var cat=CAT_META[p.category];
+  document.getElementById('modal-meta').innerHTML=
+    ['<span class="meta-pill">📁 '+(cat?cat.label:p.category)+'</span>',
+     '<span class="meta-pill">📐 '+(p.ratio||'1:1')+'</span>']
+    .concat(p.tags.map(function(t){return '<span class="meta-pill">'+t+'</span>';})).join('');
+  document.getElementById('modal-prompt-full').textContent=p.prompt;
+  // Neg prompt section
+  var neg=document.getElementById('modal-neg');
+  var negLabel=document.getElementById('modal-neg-label');
+  var negCopyBtn=document.getElementById('modal-copy-neg-btn');
+  if(p.neg){
+    neg.style.display='block'; neg.textContent='⊖ '+p.neg;
+    negLabel.style.display='block';
+    negCopyBtn.disabled=false; negCopyBtn.style.opacity='1';
+  } else {
+    neg.style.display='none'; negLabel.style.display='none';
+    negCopyBtn.disabled=true; negCopyBtn.style.opacity='.4';
+  }
+  document.getElementById('modal-fav-btn').textContent=favs.indexOf(id)>-1?'♥ 取消':'♥ 收藏';
+  var hist=document.getElementById('modal-history');
+  if(p.versions&&p.versions.length){
+    hist.style.display='block';
+    hist.innerHTML='<div style="font-size:13px;font-weight:600;margin-bottom:8px">版本紀錄</div>'+
+      p.versions.map(function(v){return '<div class="history-item"><span class="history-ver">'+v.ver+'</span><span class="history-text">'+v.change+'</span></div>';}).join('');
+  } else { hist.style.display='none'; }
+  openModal('modal-detail');
+}
+
+function copyModalPrompt(type) {
+  var p=allPrompts.find(function(x){return x.id===curModalId;});
+  if(!p) return;
+  var text = type==='neg' ? (p.neg||'') : p.prompt;
+  if(!text){ showToast('此提示語沒有負向提示','error'); return; }
+  navigator.clipboard.writeText(text).then(function(){
+    copies++; localStorage.setItem('pv_copies',copies);
+    showToast(type==='neg'?'⊖ 負向提示已複製！':'✅ 正向提示已複製！');
+  });
+}
+
+function toggleFavFromModal() {
+  if(!curModalId) return;
+  toggleFav(curModalId);
+  document.getElementById('modal-fav-btn').textContent=favs.indexOf(curModalId)>-1?'♥ 取消':'♥ 收藏';
+}
+
+// ── BUILDER ───────────────────────────────────────────────────────────────
+function initBuilder() {
+  Object.keys(BD).forEach(function(g){
+    var c=document.getElementById('chips-'+g); if(!c) return;
+    BD[g].forEach(function(item){
+      var chip=document.createElement('div'); chip.className='chip'; chip.textContent=item;
+      chip.addEventListener('click', function(){
+        var i=bState[g].indexOf(item);
+        if(i>-1){bState[g].splice(i,1);chip.classList.remove('selected');}
+        else{bState[g].push(item);chip.classList.add('selected');}
+        updateWts(); updatePreview();
+      });
+      c.appendChild(chip);
+    });
+  });
+  var nc=document.getElementById('neg-chips');
+  NEG_KW.forEach(function(kw){
+    var chip=document.createElement('div'); chip.className='neg-chip'; chip.textContent=kw;
+    chip.addEventListener('click', function(){
+      var i=negSel.indexOf(kw);
+      if(i>-1){negSel.splice(i,1);chip.classList.remove('added');}
+      else{negSel.push(kw);chip.classList.add('added');}
+      updatePreview();
+    });
+    nc.appendChild(chip);
+  });
+}
+
+function updateWts() {
+  var all=[]; Object.values(bState).forEach(function(a){all=all.concat(a);});
+  var c=document.getElementById('weight-rows'); c.innerHTML='';
+  if(!all.length) return;
+  all.forEach(function(item){
+    if(!wts[item]) wts[item]=1.0;
+    var row=document.createElement('div'); row.className='weight-row';
+    var lbl=document.createElement('span'); lbl.className='weight-label'; lbl.textContent=item;
+    var sl=document.createElement('input'); sl.type='range'; sl.min=0.5; sl.max=2.0; sl.step=0.1; sl.value=wts[item];
+    var val=document.createElement('span'); val.className='weight-val'; val.textContent=parseFloat(wts[item]).toFixed(1);
+    sl.addEventListener('input',function(){wts[item]=parseFloat(this.value);val.textContent=parseFloat(this.value).toFixed(1);updatePreview();});
+    row.appendChild(lbl); row.appendChild(sl); row.appendChild(val); c.appendChild(row);
+  });
+}
+
+function updatePreview() {
+  var parts=[];
+  Object.keys(bState).forEach(function(g){
+    bState[g].forEach(function(item){
+      var w=wts[item]||1.0;
+      var t=selLang==='en'?(ZH_EN[item]||item):item;
+      parts.push(Math.abs(w-1)>0.05?'('+t+':'+w.toFixed(1)+')':t);
+    });
+  });
+  parts.push(selRatio);
+  var prev=document.getElementById('prompt-preview');
+  if(parts.length<=1){prev.innerHTML='<span style="color:var(--text-dim)">請選取左方選項…</span>';}
+  else{prev.textContent=parts.join(', ');}
+  var negEl=document.getElementById('neg-preview');
+  var negBtn=document.getElementById('copy-neg-btn');
+  if(negSel.length){
+    negEl.style.display='block'; negEl.textContent='⊖ '+negSel.join(', ');
+    negBtn.disabled=false; negBtn.style.opacity='1'; negBtn.style.cursor='pointer';
+  } else {
+    negEl.style.display='none';
+    negBtn.disabled=true; negBtn.style.opacity='.4'; negBtn.style.cursor='default';
+  }
+}
+
+function initRatio() {
+  document.querySelectorAll('.ratio-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.ratio-btn').forEach(function(b){b.classList.remove('active');});
+      this.classList.add('active'); selRatio=this.dataset.ratio; updatePreview();
+    });
+  });
+}
+function initLang() {
+  document.querySelectorAll('.lang-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.lang-btn').forEach(function(b){b.classList.remove('active');});
+      this.classList.add('active'); selLang=this.dataset.lang; updatePreview();
+    });
+  });
+}
+
+function copyBuiltPrompt(type) {
+  if(type==='pos'){
+    var t=document.getElementById('prompt-preview').textContent;
+    if(!t||t.includes('請選取')){showToast('⚠️ 請先選取選項');return;}
+    navigator.clipboard.writeText(t).then(function(){copies++;localStorage.setItem('pv_copies',copies);showToast('✅ 正向提示已複製！');});
+  } else {
+    if(!negSel.length){showToast('⚠️ 請先選取負向關鍵字','error');return;}
+    navigator.clipboard.writeText(negSel.join(', ')).then(function(){showToast('⊖ 負向提示已複製！');});
+  }
+}
+
+function saveBuiltPrompt() {
+  var t=document.getElementById('prompt-preview').textContent;
+  if(!t||t.includes('請選取')){showToast('⚠️ 請先選取選項');return;}
+  built++; localStorage.setItem('pv_built',built);
+  var np={id:Date.now(),title:'自建 '+new Date().toLocaleDateString('zh-TW'),category:'social',ratio:selRatio.replace('--ar ',''),prompt:t,neg:negSel.join(', '),tags:['自建'],gradient:'linear-gradient(135deg,#1a2a1a,#2a1a2a)',emoji:'⚗',versions:[{ver:'v1',change:'工坊建立'}]};
+  custom.push(np); allPrompts.push(np); localStorage.setItem('pv_custom',JSON.stringify(custom));
+  showToast('💾 已儲存到資料庫！'); applyFilter(); updateCounts();
+  document.getElementById('stat-total').textContent=allPrompts.length;
+}
+
+// ── AI EXPAND (強化錯誤處理) ──────────────────────────────────────────────
+function aiExpand() {
+  var inp=document.getElementById('ai-input').value.trim();
+  if(!inp){showToast('⚠️ 請輸入關鍵字');return;}
+  if(!apiKey){openModal('modal-api');showToast('請先設定 API 金鑰');return;}
+  var ld=document.getElementById('ai-loading');
+  var skel=document.getElementById('ai-skeleton');
+  var re=document.getElementById('ai-result');
+  var btn=document.getElementById('ai-btn');
+  ld.classList.add('visible'); skel.classList.add('visible'); re.innerHTML=''; btn.disabled=true; btn.textContent='…';
+  fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,
+      messages:[{role:'user',content:'你是 AI 繪圖提示語專家。請將以下中文關鍵字擴寫成專業英文 AI 繪圖提示語，適用於 Midjourney 或 Stable Diffusion。包含主體、風格、燈光、鏡頭、渲染細節，約 60-100 個英文單字。只輸出提示語本身。\n\n關鍵字：'+inp}]})
+  }).then(function(res){
+    // ── 強化 HTTP 狀態碼錯誤處理 ──
+    if(!res.ok){
+      return res.json().then(function(errData){
+        var err=new Error(errData.error&&errData.error.message||'API error');
+        err.status=res.status;
+        throw err;
+      }).catch(function(e){
+        if(e.status) throw e;
+        var err=new Error('HTTP '+res.status);
+        err.status=res.status;
+        throw err;
+      });
+    }
+    return res.json();
+  }).then(function(d){
+    ld.classList.remove('visible'); skel.classList.remove('visible'); btn.disabled=false; btn.textContent='✦ 擴寫';
+    var txt=d.content&&d.content[0]?d.content[0].text:'生成失敗，請確認金鑰';
+    re.innerHTML='<div style="background:var(--surface2);border:1px solid rgba(200,241,53,0.2);border-radius:10px;padding:13px;font-family:Courier New,monospace;font-size:12px;line-height:1.7;color:var(--text);margin:10px 0 8px">'+txt+'</div>'+
+      '<button class="btn btn-accent" style="min-height:44px" onclick="copyText(\''+encodeURIComponent(txt)+'\')">📋 複製</button>';
+  }).catch(function(err){
+    ld.classList.remove('visible'); skel.classList.remove('visible'); btn.disabled=false; btn.textContent='✦ 擴寫';
+    console.error('API Error:', err);
+    var msg, isNetErr=false;
+    if(!navigator.onLine){
+      msg='⚡ 無網路連線，請檢查您的網路設定。';
+    } else if(err.status===401){
+      msg='🔑 API 金鑰無效或已過期，請重新設定。';
+    } else if(err.status===429){
+      msg='⏱ 請求過於頻繁（Rate Limit），請稍後再試。';
+    } else if(err.status===500||err.status===503){
+      msg='🌐 Anthropic 伺服器暫時異常，請稍後再試。';
+    } else if(err.status){
+      msg='❌ API 錯誤（HTTP '+err.status+'），請確認設定。';
+    } else {
+      msg='🌐 連線異常，請確認網路或 API Proxy 設定。';
+      isNetErr=true;
+    }
+    re.innerHTML='<div class="api-error"><span class="api-error-icon">⚠️</span><span>'+msg+(err.status===401?' <button class="btn btn-ghost btn-sm" style="margin-top:6px;display:inline-block" onclick="openModal(\'modal-api\')">重新設定金鑰</button>':'')+'</span></div>';
+  });
+}
+
+function copyText(enc){navigator.clipboard.writeText(decodeURIComponent(enc)).then(function(){showToast('✅ 已複製！');});}
+
+// ── ADD PROMPT ────────────────────────────────────────────────────────────
+function openAddModal(){openModal('modal-add');}
+function saveNewPrompt() {
+  var t=document.getElementById('add-title').value.trim();
+  var pr=document.getElementById('add-prompt').value.trim();
+  var ng=document.getElementById('add-neg').value.trim();
+  var ca=document.getElementById('add-category').value.trim()||'social';
+  var tg=document.getElementById('add-tags').value.split(',').map(function(x){return x.trim();}).filter(Boolean);
+  if(!t||!pr){showToast('⚠️ 請填寫名稱和提示語');return;}
+  var np={id:Date.now(),title:t,category:ca,ratio:'1:1',prompt:pr,neg:ng,tags:tg,gradient:'linear-gradient(135deg,#1a2a3a,#2a1a3a)',emoji:'✦',versions:[{ver:'v1',change:'手動新增'}]};
+  custom.push(np); allPrompts.push(np); localStorage.setItem('pv_custom',JSON.stringify(custom));
+  closeModal('modal-add'); showToast('✦ 新增成功！'); applyFilter(); renderCats(); updateCounts();
+  ['add-title','add-prompt','add-neg','add-category','add-tags'].forEach(function(i){document.getElementById(i).value='';});
+}
+
+// ── EXPORT / IMPORT ───────────────────────────────────────────────────────
+function exportJSON() {
+  var exportData = {
+    version: 1,
+    exported: new Date().toISOString(),
+    prompts: custom,
+    favorites: favs
+  };
+  var blob = new Blob([JSON.stringify(exportData, null, 2)], {type:'application/json'});
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href   = url;
+  a.download = 'promptvault-export-'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
+  showToast('⬇ 已匯出 JSON 檔案！');
+}
+
+function initImport() {
+  var fileInput = document.getElementById('import-file-input');
+  var dropArea  = document.getElementById('import-drop');
+  fileInput.addEventListener('change', function(){
+    if(this.files[0]) processImportFile(this.files[0]);
+  });
+  dropArea.addEventListener('dragover', function(e){e.preventDefault();this.classList.add('dragover');});
+  dropArea.addEventListener('dragleave', function(){this.classList.remove('dragover');});
+  dropArea.addEventListener('drop', function(e){
+    e.preventDefault(); this.classList.remove('dragover');
+    if(e.dataTransfer.files[0]) processImportFile(e.dataTransfer.files[0]);
+  });
+}
+
+function processImportFile(file) {
+  var status = document.getElementById('import-status');
+  if(!file.name.endsWith('.json')){status.innerHTML='<span style="color:#f15f79">請選取 .json 檔案</span>';return;}
+  var reader = new FileReader();
+  reader.onload = function(e){
+    try {
+      var data = JSON.parse(e.target.result);
+      var imported = data.prompts || (Array.isArray(data) ? data : []);
+      if(!imported.length){status.innerHTML='<span style="color:#f15f79">JSON 格式錯誤或無提示語資料</span>';return;}
+      // Deduplicate by id
+      var existingIds = allPrompts.map(function(p){return p.id;});
+      var newOnes = imported.filter(function(p){return existingIds.indexOf(p.id)<0;});
+      if(!newOnes.length){status.innerHTML='<span style="color:var(--accent3)">所有提示語已存在，無需匯入</span>';return;}
+      newOnes.forEach(function(p){ custom.push(p); allPrompts.push(p); });
+      localStorage.setItem('pv_custom',JSON.stringify(custom));
+      // Also merge favorites if present
+      if(data.favorites && Array.isArray(data.favorites)){
+        data.favorites.forEach(function(id){if(favs.indexOf(id)<0) favs.push(id);});
+        localStorage.setItem('pv_favs',JSON.stringify(favs));
+      }
+      updateCounts(); applyFilter(); renderCats();
+      status.innerHTML='<span style="color:var(--accent)">✅ 成功匯入 '+newOnes.length+' 個提示語！</span>';
+      closeModal('modal-import');
+      showToast('✅ 匯入 '+newOnes.length+' 個提示語！');
+    } catch(err){
+      console.error('Import error:', err);
+      status.innerHTML='<span style="color:#f15f79">JSON 解析失敗：'+err.message+'</span>';
+    }
+  };
+  reader.readAsText(file);
+}
+
+function confirmClearCustom() {
+  if(!custom.length){showToast('沒有自建提示語可清除');return;}
+  // Simple confirm with custom modal feel using toast + second button
+  var confirmed = confirm('確定要清除全部 '+custom.length+' 個自建提示語？此操作無法復原。\n\n建議先「匯出 JSON」備份。');
+  if(!confirmed) return;
+  custom.length = 0;
+  allPrompts = BASE.slice();
+  localStorage.removeItem('pv_custom');
+  // Remove custom ids from favs
+  var baseIds = BASE.map(function(p){return p.id;});
+  favs = favs.filter(function(id){return baseIds.indexOf(id)>-1;});
+  localStorage.setItem('pv_favs',JSON.stringify(favs));
+  updateCounts(); applyFilter(); renderCats(); renderProfile();
+  showToast('🗑 已清除所有自建提示語');
+}
+
+// ── API KEY (with masking) ────────────────────────────────────────────────
+function maskKey(k) {
+  if(!k||k.length<8) return k;
+  return k.substring(0,7)+'…'+k.substring(k.length-4);
+}
+
+function showApiModal() {
+  var display = document.getElementById('current-key-display');
+  var clearBtn = document.getElementById('clear-key-btn');
+  if(apiKey){
+    display.style.display='block';
+    display.textContent='目前金鑰：'+maskKey(apiKey);
+    clearBtn.style.display='inline-flex';
+  } else {
+    display.style.display='none';
+    clearBtn.style.display='none';
+  }
+  document.getElementById('api-key-input').value='';
+  openModal('modal-api');
+}
+
+function saveApiKey() {
+  var k=document.getElementById('api-key-input').value.trim();
+  if(!k){showToast('⚠️ 請輸入 API 金鑰');return;}
+  if(!k.startsWith('sk-ant-')){showToast('⚠️ 格式錯誤，應以 sk-ant- 開頭','error');return;}
+  apiKey=k; localStorage.setItem('pv_apikey',k);
+  updateApiStatus(); closeModal('modal-api'); showToast('✅ API 金鑰已儲存');
+}
+
+function clearApiKey() {
+  apiKey=''; localStorage.removeItem('pv_apikey');
+  updateApiStatus(); closeModal('modal-api'); showToast('🗑 API 金鑰已清除');
+}
+
+function updateApiStatus() {
+  var el=document.getElementById('api-status-text');
+  if(apiKey){el.textContent='✅ '+maskKey(apiKey);el.style.color='var(--accent)';}
+  else{el.textContent='點擊設定 API 金鑰';el.style.color='';}
+}
+
+// ── MODAL HELPERS ─────────────────────────────────────────────────────────
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+// ── TOAST (supports error type) ───────────────────────────────────────────
+function showToast(msg, type) {
+  var t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast'; // reset
+  if(type==='error') t.classList.add('error');
+  t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');}, 2400);
+}
+
+init();
+</script>
+</body>
+</html>
