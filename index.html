@@ -277,18 +277,6 @@ textarea.ai-input{resize:vertical;min-height:80px}
 }
 @media(max-width:375px){.page{padding-left:12px;padding-right:12px}}
 </style>
-
-<!-- PWA Meta — auto-injected by PWA 打包神器 -->
-
-<meta name="description" content="Prompt 生成器">
-
-
-
-
-
-
-
-<script>if('serviceWorker'in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').then(function(r){console.log('[SW] registered:',r.scope)}).catch(function(e){console.warn('[SW] failed:',e)});});}</script>
 </head>
 <body>
 <div class="app">
@@ -342,7 +330,7 @@ textarea.ai-input{resize:vertical;min-height:80px}
   <div class="page active" id="page-explore">
     <div class="section-header">
       <div class="section-title">探索提示語</div>
-      <div class="section-count" id="explore-count">12 個</div>
+      <div class="section-count" id="explore-count">64 個</div>
       <div class="section-actions">
         <button class="btn btn-ghost btn-sm" onclick="exportJSON()">⬇ 匯出</button>
         <button class="btn btn-ghost btn-sm" onclick="openModal('modal-import')">⬆ 匯入</button>
@@ -359,6 +347,10 @@ textarea.ai-input{resize:vertical;min-height:80px}
       <div class="filter-tag" data-filter="1:1">1:1</div>
       <div class="filter-tag" data-filter="16:9">16:9</div>
       <div class="filter-tag" data-filter="9:16">9:16</div>
+        <div class="filter-tag" data-filter="uiux">UI/UX</div>
+        <div class="filter-tag" data-filter="illustration">插畫</div>
+        <div class="filter-tag" data-filter="architecture">建築</div>
+        <div class="filter-tag" data-filter="macro">微距攝影</div>
     </div>
     <div class="masonry-grid" id="prompt-grid"></div>
   </div>
@@ -446,7 +438,7 @@ textarea.ai-input{resize:vertical;min-height:80px}
       <div class="stat-card"><div class="stat-num" id="stat-saved">0</div><div class="stat-label">已收藏</div></div>
       <div class="stat-card"><div class="stat-num" id="stat-copied">0</div><div class="stat-label">累計複製</div></div>
       <div class="stat-card"><div class="stat-num" id="stat-built">0</div><div class="stat-label">工坊建立</div></div>
-      <div class="stat-card"><div class="stat-num" id="stat-total">12</div><div class="stat-label">資料庫總量</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-total">64</div><div class="stat-label">資料庫總量</div></div>
     </div>
     <!-- Data management -->
     <div class="data-bar">
@@ -619,13 +611,1194 @@ var BASE = [
    versions:[{ver:"v1",change:"初版"}]}
 ];
 
+
+var EXTRA_PROMPTS = [
+  {
+    "id": 101,
+    "title": "iOS 極簡登入介面",
+    "category": "uiux",
+    "ratio": "9:16",
+    "prompt": "iOS mobile app login screen UI design, ultra clean minimalist interface, soft white and light gray palette, rounded corners, SF Pro typography, subtle drop shadows, glassmorphism card elements, dark mode toggle, smooth gradient background, Apple Human Interface Guidelines, Figma mockup render",
+    "neg": "cluttered, too many elements, outdated, skeuomorphic, low contrast, pixelated",
+    "tags": [
+      "UI設計",
+      "iOS",
+      "極簡",
+      "登入畫面",
+      "9:16"
+    ],
+    "gradient": "linear-gradient(135deg,#e8f4f8,#b8d4e8)",
+    "emoji": "📱",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以 Apple HIG 為基礎，強調留白與圓角設計語言"
+      }
+    ]
+  },
+  {
+    "id": 102,
+    "title": "深色模式儀表板",
+    "category": "uiux",
+    "ratio": "16:9",
+    "prompt": "Dark mode SaaS dashboard UI design, data visualization with glowing charts, neon accent colors on deep navy background, card-based layout, sidebar navigation, real-time analytics panels, clean sans-serif typography, subtle grid lines, modern fintech aesthetic, Figma design system, desktop web app mockup",
+    "neg": "light mode, cluttered, poor contrast, comic sans, gradients overuse",
+    "tags": [
+      "儀表板",
+      "深色模式",
+      "數據可視化",
+      "SaaS"
+    ],
+    "gradient": "linear-gradient(135deg,#0d1117,#1a2744)",
+    "emoji": "📊",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "深色背景搭配霓虹強調色，提升數據可讀性"
+      }
+    ]
+  },
+  {
+    "id": 103,
+    "title": "電商購物車頁面",
+    "category": "uiux",
+    "ratio": "9:16",
+    "prompt": "E-commerce mobile shopping cart UI, clean product list with thumbnail images, price breakdown section, apply coupon input field, sticky checkout button, warm white background, coral accent color for CTA buttons, minimal icon system, smooth micro-animation implied, Material Design 3 inspired, high-fidelity prototype",
+    "neg": "cluttered layout, bad typography, low contrast buttons, confusing hierarchy",
+    "tags": [
+      "電商",
+      "購物車",
+      "手機UI",
+      "Material Design"
+    ],
+    "gradient": "linear-gradient(135deg,#fff5f5,#ffe0d4)",
+    "emoji": "🛒",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "參考 Material Design 3，強調清晰的價格層級與明確的 CTA"
+      }
+    ]
+  },
+  {
+    "id": 104,
+    "title": "音樂播放器介面",
+    "category": "uiux",
+    "ratio": "1:1",
+    "prompt": "Music streaming app player screen, full-bleed album artwork background with blur overlay, frosted glass playback controls, animated equalizer bars, soft gradient overlay, smooth progress slider, mini lyrics display, iOS style dynamic island integration, premium dark aesthetic, Spotify-inspired UI but unique, high fidelity mockup",
+    "neg": "flat boring design, no depth, poor readability, outdated player design",
+    "tags": [
+      "音樂播放器",
+      "玻璃擬態",
+      "UI設計",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#1a0533,#2d1a4a)",
+    "emoji": "🎵",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以全幅專輯封面為背景，毛玻璃控制列提升沉浸感"
+      }
+    ]
+  },
+  {
+    "id": 105,
+    "title": "健身追蹤 App 首頁",
+    "category": "uiux",
+    "ratio": "9:16",
+    "prompt": "Fitness tracking mobile app home screen, workout progress rings similar to Apple Watch activity rings, daily calorie counter, scheduled workout cards, profile avatar, clean white and electric green color scheme, bold sans-serif numbers, motivational progress indicators, smooth rounded UI components, health app aesthetic",
+    "neg": "dull colors, poor data visualization, cluttered interface",
+    "tags": [
+      "健身",
+      "追蹤App",
+      "UI設計",
+      "進度圓環"
+    ],
+    "gradient": "linear-gradient(135deg,#e8ffe0,#c8f135)",
+    "emoji": "💪",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "仿 Apple 活動環設計語言，強調每日目標進度"
+      }
+    ]
+  },
+  {
+    "id": 106,
+    "title": "旅遊訂房探索頁面",
+    "category": "uiux",
+    "ratio": "16:9",
+    "prompt": "Travel booking app exploration page UI, full-bleed hero destination photography, floating search bar with location and date pickers, horizontal scroll of destination cards, filter chips row, map view toggle, warm earth tone accents, Airbnb-inspired card design, clean typography hierarchy, desktop responsive layout mockup",
+    "neg": "outdated booking interface, low quality card design, cluttered filters",
+    "tags": [
+      "旅遊",
+      "訂房",
+      "探索頁",
+      "UI設計",
+      "16:9"
+    ],
+    "gradient": "linear-gradient(135deg,#fff8e8,#f5e6c8)",
+    "emoji": "✈️",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以大圖視覺為主，強調目的地的情感吸引力"
+      }
+    ]
+  },
+  {
+    "id": 107,
+    "title": "醫療預約系統介面",
+    "category": "uiux",
+    "ratio": "16:9",
+    "prompt": "Medical appointment booking web interface, clean clinical white design, soft blue accent colors, doctor profile cards with availability calendar, time slot selection grid, patient information form, accessible design with high contrast text, trust-building professional aesthetic, healthcare UX best practices, desktop web mockup, WCAG AA compliant",
+    "neg": "scary medical imagery, poor accessibility, cluttered form, anxiety-inducing design",
+    "tags": [
+      "醫療",
+      "預約系統",
+      "無障礙設計",
+      "UI設計"
+    ],
+    "gradient": "linear-gradient(135deg,#e8f4fe,#b8d8f8)",
+    "emoji": "🏥",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以信任感與清晰度為核心，符合 WCAG AA 無障礙標準"
+      }
+    ]
+  },
+  {
+    "id": 108,
+    "title": "金融投資組合App",
+    "category": "uiux",
+    "ratio": "9:16",
+    "prompt": "Personal finance investment portfolio mobile app, stock chart with candlestick patterns, portfolio allocation donut chart, gain-loss indicators in green and red, dark premium aesthetic with gold accents, clean data tables, pull-to-refresh implied, Bloomberg terminal inspired but mobile-friendly, professional fintech UI design",
+    "neg": "cluttered charts, poor readability, confusing data presentation, amateur design",
+    "tags": [
+      "金融",
+      "投資組合",
+      "手機App",
+      "深色UI"
+    ],
+    "gradient": "linear-gradient(135deg,#1a1200,#2d2200)",
+    "emoji": "💹",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "深色底搭配金色點綴，強調高端金融工具感"
+      }
+    ]
+  },
+  {
+    "id": 109,
+    "title": "社群媒體個人頁面",
+    "category": "uiux",
+    "ratio": "9:16",
+    "prompt": "Social media creator profile page mobile UI, grid post layout, story highlights circles, follower stats cards, bio section with gradient text, pinned posts indicator, verified badge design, smooth transition animations implied, soft pastel and white palette, Instagram-inspired but more editorial feel, high-fidelity mobile mockup",
+    "neg": "cluttered grid, poor photo arrangement, ugly badge design, low quality typography",
+    "tags": [
+      "社群媒體",
+      "個人頁面",
+      "創作者",
+      "手機UI"
+    ],
+    "gradient": "linear-gradient(135deg,#fce4f8,#e8d4f8)",
+    "emoji": "👤",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以 Instagram 為參考，加入更強的排版個性"
+      }
+    ]
+  },
+  {
+    "id": 110,
+    "title": "AI 聊天機器人介面",
+    "category": "uiux",
+    "ratio": "16:9",
+    "prompt": "AI chatbot conversation interface, clean chat bubbles with distinct user and AI styling, typing indicator animation, suggested response chips, conversation history sidebar, model selection dropdown, token usage indicator, dark and light mode split preview, subtle gradient backgrounds for AI messages, modern GPT-style UI but with unique visual identity",
+    "neg": "old-fashioned chat UI, poor bubble design, confusing navigation, no visual hierarchy",
+    "tags": [
+      "AI聊天",
+      "對話介面",
+      "聊天機器人",
+      "UI設計"
+    ],
+    "gradient": "linear-gradient(135deg,#f0e8ff,#d4c8f8)",
+    "emoji": "🤖",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "區分使用者與 AI 對話泡泡的視覺語言，提升可讀性"
+      }
+    ]
+  },
+  {
+    "id": 111,
+    "title": "夢幻森林精靈插畫",
+    "category": "illustration",
+    "ratio": "1:1",
+    "prompt": "Enchanted forest fairy illustration, delicate ethereal fairy with translucent wings, surrounded by glowing fireflies and magical mushrooms, soft watercolor and digital art fusion, warm amber and sage green palette, painterly brush strokes, dreamy bokeh light particles, Studio Ghibli aesthetic meets modern digital illustration, highly detailed character art",
+    "neg": "dark horror, overly realistic, adult content, muddy colors, poor anatomy",
+    "tags": [
+      "精靈",
+      "奇幻插畫",
+      "森林",
+      "Ghibli風"
+    ],
+    "gradient": "linear-gradient(135deg,#e8f5e0,#d4f0c0)",
+    "emoji": "🧚",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "融合水彩質感與 Ghibli 美學，強調溫暖奇幻氛圍"
+      }
+    ]
+  },
+  {
+    "id": 112,
+    "title": "蒸汽龐克城市插畫",
+    "category": "illustration",
+    "ratio": "16:9",
+    "prompt": "Steampunk cityscape wide illustration, Victorian-era mechanical city with giant brass gears and steam pipes, airships docking at sky harbors, warm sepia and copper tones, detailed architectural linework, atmospheric fog with god rays of light, intricate mechanical details, painterly digital oil painting style, panoramic city view, concept art quality",
+    "neg": "modern technology, clean minimalism, anime style, flat design",
+    "tags": [
+      "蒸汽龐克",
+      "城市插畫",
+      "概念藝術",
+      "16:9"
+    ],
+    "gradient": "linear-gradient(135deg,#3d2800,#6b4400)",
+    "emoji": "⚙️",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以維多利亞時代建築為基礎，加入蒸汽龐克機械細節"
+      }
+    ]
+  },
+  {
+    "id": 113,
+    "title": "復古日本旅遊海報",
+    "category": "illustration",
+    "ratio": "9:16",
+    "prompt": "Retro Japanese travel poster illustration, Mount Fuji at sunset with traditional torii gate in foreground, flat graphic design style inspired by 1930s travel posters, limited color palette of vermillion red, navy and cream, bold silhouettes, simple geometric shapes, Japanese woodblock print texture, vintage letterpress feel",
+    "neg": "photorealistic, too many colors, modern style, cluttered composition",
+    "tags": [
+      "日本",
+      "復古海報",
+      "插畫",
+      "富士山",
+      "9:16"
+    ],
+    "gradient": "linear-gradient(135deg,#8b1a1a,#2c3e6b)",
+    "emoji": "🗻",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "參考 1930 年代旅遊海報設計，以限色扁平風格表現"
+      }
+    ]
+  },
+  {
+    "id": 114,
+    "title": "水下珊瑚海洋插畫",
+    "category": "illustration",
+    "ratio": "16:9",
+    "prompt": "Underwater coral reef scene illustration, vibrant tropical fish swimming among colorful coral formations, bioluminescent jellyfish in background, rich cerulean blue water with light caustics from above, impressionistic brushwork meets scientific illustration detail, National Geographic meets Studio Ghibli aesthetic, wide cinematic ocean vista",
+    "neg": "dark and murky, dead coral, pollution theme, horror elements",
+    "tags": [
+      "海洋",
+      "珊瑚礁",
+      "水下世界",
+      "自然插畫"
+    ],
+    "gradient": "linear-gradient(135deg,#003366,#006699)",
+    "emoji": "🐠",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以活潑的色彩和光折射效果呈現生命力豐富的珊瑚世界"
+      }
+    ]
+  },
+  {
+    "id": 115,
+    "title": "貓咪咖啡廳插畫",
+    "category": "illustration",
+    "ratio": "1:1",
+    "prompt": "Cozy cat cafe interior illustration, multiple cats lounging on wooden furniture and window sills, warm afternoon sunlight streaming through lace curtains, hanging plants and coffee cups, whimsical and charming storybook illustration style, muted earth tones with pops of terracotta and sage, fine ink linework with watercolor wash, small details inviting exploration",
+    "neg": "realistic photo style, dark, modern minimalism, cartoon without detail",
+    "tags": [
+      "貓咪",
+      "咖啡廳",
+      "插畫",
+      "溫暖場景",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#f5e6d0,#e8d0b0)",
+    "emoji": "🐱",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以溫暖的午後光線為主調，描繪充滿細節的貓咪咖啡廳"
+      }
+    ]
+  },
+  {
+    "id": 116,
+    "title": "太空探險家插畫",
+    "category": "illustration",
+    "ratio": "9:16",
+    "prompt": "Space explorer astronaut illustration, lone astronaut in vintage-style spacesuit floating above alien planet surface, twin moons rising, nebula clouds in vibrant purple and teal, distant stars and galaxies, retro sci-fi aesthetic meets modern digital painting, rich color contrast, sense of wonder and solitude, editorial illustration quality",
+    "neg": "realistic NASA photo style, horror alien, dark dystopian tone",
+    "tags": [
+      "太空",
+      "探險家",
+      "科幻插畫",
+      "復古未來"
+    ],
+    "gradient": "linear-gradient(135deg,#0a0a1e,#1a0533)",
+    "emoji": "🚀",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以復古太空時代美學詮釋孤獨探索的奇妙感受"
+      }
+    ]
+  },
+  {
+    "id": 117,
+    "title": "中秋節節慶插畫",
+    "category": "illustration",
+    "ratio": "1:1",
+    "prompt": "Mid-Autumn Festival illustration, family gathering under enormous full moon, traditional Chinese lanterns in warm orange and red, children running with paper lanterns, mooncake box arrangement in foreground, ancient osmanthus tree silhouette, warm nostalgic color palette, traditional Chinese ink painting style meets modern flat illustration, festive and heartwarming",
+    "neg": "modern setting, dark, scary, Western Halloween aesthetic",
+    "tags": [
+      "中秋節",
+      "節慶插畫",
+      "中式傳統",
+      "月亮",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#8b4400,#cc6600)",
+    "emoji": "🌕",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以傳統水墨意境與現代插畫技法融合，呈現中秋溫情"
+      }
+    ]
+  },
+  {
+    "id": 118,
+    "title": "賽博龐克武士插畫",
+    "category": "illustration",
+    "ratio": "9:16",
+    "prompt": "Cyberpunk samurai warrior illustration, traditional Japanese warrior with neon-lit cybernetic enhancements, standing in rain-soaked futuristic Tokyo alley, cherry blossoms falling mixed with holographic advertisements, blade with energy glow, dark dramatic lighting with neon pink and blue reflections, concept art style, high detail character illustration",
+    "neg": "childish style, pastel cute, historical accuracy without cyber elements",
+    "tags": [
+      "武士",
+      "賽博龐克",
+      "角色插畫",
+      "未來日本"
+    ],
+    "gradient": "linear-gradient(135deg,#1a0022,#2d0044)",
+    "emoji": "⚔️",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "日本傳統武士美學與賽博龐克霓虹世界的衝突融合"
+      }
+    ]
+  },
+  {
+    "id": 119,
+    "title": "植物療癒系插畫",
+    "category": "illustration",
+    "ratio": "1:1",
+    "prompt": "Botanical healing illustration, assortment of medicinal herbs and wildflowers in detailed scientific illustration style, hand-drawn ink linework with delicate watercolor fills, sage green, dusty rose and cream palette, Latin plant names in elegant calligraphy, pressed flower aesthetic, vintage apothecary handbook meets modern wellness brand, flat lay composition",
+    "neg": "3D render, photorealistic, dark, cluttered without order",
+    "tags": [
+      "植物插畫",
+      "療癒系",
+      "水彩",
+      "植物學",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#e8f5e0,#d4e8c0)",
+    "emoji": "🌿",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以維多利亞時代植物學插圖為靈感，融入現代療癒美學"
+      }
+    ]
+  },
+  {
+    "id": 120,
+    "title": "彩虹幾何抽象插畫",
+    "category": "illustration",
+    "ratio": "1:1",
+    "prompt": "Abstract geometric rainbow illustration, dynamic composition of overlapping translucent geometric shapes, circle, triangle and hexagon motifs, bold vibrant rainbow gradient color flow, clean vector art style, Swiss design grid principles, positive energy and joyful aesthetic, suitable for album cover or brand art, high contrast against white background",
+    "neg": "dark and moody, representational objects, cluttered organic shapes",
+    "tags": [
+      "幾何抽象",
+      "彩虹",
+      "向量插畫",
+      "品牌藝術"
+    ],
+    "gradient": "linear-gradient(135deg,#ff6b6b,#4ecdc4)",
+    "emoji": "🌈",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以瑞士設計格網原則為基礎，探索幾何圖形的色彩律動"
+      }
+    ]
+  },
+  {
+    "id": 121,
+    "title": "未來派玻璃博物館",
+    "category": "architecture",
+    "ratio": "16:9",
+    "prompt": "Futuristic glass museum architecture, sweeping curved transparent facade reflecting cloud-filled sky, structural steel exoskeleton visible through glass panels, surrounded by sculptural landscape garden, golden hour warm light creating rainbow refractions, architectural photography style, ultra-wide angle lens, Zaha Hadid inspired parametric design, photorealistic render",
+    "neg": "old building, historical architecture, interior only, dark stormy weather",
+    "tags": [
+      "博物館",
+      "玻璃建築",
+      "參數化設計",
+      "未來建築"
+    ],
+    "gradient": "linear-gradient(135deg,#b8d8f8,#e8f4fe)",
+    "emoji": "🏛️",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以 Zaha Hadid 流動曲線美學為靈感，探索玻璃與光的關係"
+      }
+    ]
+  },
+  {
+    "id": 122,
+    "title": "日式枯山水庭院",
+    "category": "architecture",
+    "ratio": "16:9",
+    "prompt": "Traditional Japanese Zen rock garden architecture photography, immaculate raked gravel patterns around moss-covered stones, ancient wooden veranda in foreground, maple tree with autumn foliage, distant mountain backdrop, early morning soft mist, perfect bilateral symmetry, meditative stillness, Canon tilt-shift lens creating selective focus, golden morning light",
+    "neg": "modern elements, colorful flowers, people, cluttered scene",
+    "tags": [
+      "枯山水",
+      "日式庭院",
+      "禪意",
+      "建築攝影"
+    ],
+    "gradient": "linear-gradient(135deg,#e8e0d8,#d4c8b8)",
+    "emoji": "🪨",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以早晨薄霧與移軸鏡頭強調日式庭院的寧靜禪意"
+      }
+    ]
+  },
+  {
+    "id": 123,
+    "title": "工業風閣樓公寓",
+    "category": "architecture",
+    "ratio": "9:16",
+    "prompt": "Industrial loft apartment interior architecture, exposed red brick walls and structural steel beams, polished concrete floors, floor-to-ceiling steel-frame windows with city views, minimal furniture in warm leather and dark wood, Edison bulb pendant lighting, Brooklyn-inspired aesthetic, interior architecture photography, dusk blue hour, professional architectural photography",
+    "neg": "suburban house style, colorful cluttered decor, no natural light",
+    "tags": [
+      "工業風",
+      "閣樓",
+      "室內建築",
+      "紅磚"
+    ],
+    "gradient": "linear-gradient(135deg,#3d2010,#5a3018)",
+    "emoji": "🏭",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以布魯克林工業閣樓為靈感，展現粗獷與精緻的平衡"
+      }
+    ]
+  },
+  {
+    "id": 124,
+    "title": "北歐木構住宅",
+    "category": "architecture",
+    "ratio": "16:9",
+    "prompt": "Scandinavian timber frame house architecture exterior, dark charcoal stained wooden cladding, large asymmetric windows, birch forest surroundings with light snow dusting, warm interior glow visible through windows, minimal Scandinavian landscape design, slate sky creates dramatic contrast, architectural photography, Canon 24mm tilt-shift, twilight dusk lighting",
+    "neg": "tropical setting, colorful facade, cluttered landscaping, summer",
+    "tags": [
+      "北歐建築",
+      "木構造",
+      "極簡住宅",
+      "雪景"
+    ],
+    "gradient": "linear-gradient(135deg,#1a2010,#2d3418)",
+    "emoji": "🏠",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以深色木材外牆對比雪景白地，呈現北歐建築簡練美學"
+      }
+    ]
+  },
+  {
+    "id": 125,
+    "title": "摩登香港天際線",
+    "category": "architecture",
+    "ratio": "16:9",
+    "prompt": "Modern Hong Kong skyline architectural photography, dense vertical skyscrapers with mixed architectural styles, Victoria Harbour foreground reflections, dramatic storm clouds above with light breaking through, blue hour twilight, neon sign details visible on lower buildings, urban canyon perspective from street level looking up, wide angle architecture lens",
+    "neg": "empty city, daylight flat light, single building only",
+    "tags": [
+      "香港",
+      "天際線",
+      "城市建築",
+      "藍調時刻"
+    ],
+    "gradient": "linear-gradient(135deg,#0d1a2d,#1a2d44)",
+    "emoji": "🌆",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以藍調時刻捕捉香港天際線的密度與層次感"
+      }
+    ]
+  },
+  {
+    "id": 126,
+    "title": "廢棄工廠美學",
+    "category": "architecture",
+    "ratio": "16:9",
+    "prompt": "Abandoned factory interior architecture, vast industrial space with crumbling concrete floors, shafts of light through broken skylights creating dramatic god rays, overgrown vegetation reclaiming machinery, rust textures and peeling paint layers, urban exploration aesthetic, dramatic chiaroscuro lighting, architectural photography with ultra-wide angle, haunting beauty",
+    "neg": "clean modern space, people present, daylight exterior, cheerful colors",
+    "tags": [
+      "廢墟",
+      "工廠",
+      "工業美學",
+      "光影"
+    ],
+    "gradient": "linear-gradient(135deg,#1a1410,#2d2018)",
+    "emoji": "🏚️",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以破天窗透入的光束強調廢棄工廠的悲壯美學"
+      }
+    ]
+  },
+  {
+    "id": 127,
+    "title": "熱帶雨林樹屋",
+    "category": "architecture",
+    "ratio": "9:16",
+    "prompt": "Tropical rainforest treehouse architecture, elevated wooden structure woven between ancient trees, suspension bridge entrance, bamboo and reclaimed wood construction, open-air sleeping deck with hammock, surrounded by dense tropical foliage and orchids, morning mist drifting, warm dappled light through canopy, eco-architecture photography",
+    "neg": "urban setting, concrete materials, windowless, dark interior",
+    "tags": [
+      "樹屋",
+      "熱帶",
+      "生態建築",
+      "雨林"
+    ],
+    "gradient": "linear-gradient(135deg,#1a3310,#2d5518)",
+    "emoji": "🌳",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以永續生態材料為核心，呈現人與熱帶雨林共生的建築"
+      }
+    ]
+  },
+  {
+    "id": 128,
+    "title": "沙漠混凝土教堂",
+    "category": "architecture",
+    "ratio": "16:9",
+    "prompt": "Desert brutalist chapel architecture, monolithic raw concrete structure in arid landscape, single dramatic skylight creating a beam of light to altar, minimalist interior with rough-form concrete walls, small aperture windows framing desert sky, spiritual architecture photography, golden dusk sidelight sculpting concrete textures, Tadao Ando meets Alvaro Siza",
+    "neg": "ornate traditional church, colorful stained glass, tropical setting",
+    "tags": [
+      "混凝土建築",
+      "教堂",
+      "沙漠",
+      "粗獷主義"
+    ],
+    "gradient": "linear-gradient(135deg,#c8a878,#a08858)",
+    "emoji": "⛪",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以安藤忠雄的光線哲學，用單一天光賦予混凝土精神性"
+      }
+    ]
+  },
+  {
+    "id": 129,
+    "title": "霓虹夜市街景",
+    "category": "architecture",
+    "ratio": "9:16",
+    "prompt": "Night market street architecture photography, dense narrow alley lined with traditional shophouse facades, layers of neon signage in Chinese characters glowing in rain-wet cobblestones, steam from food stalls, red lanterns strung overhead, warm tungsten light mixed with cool neon reflections, Kowloon Walled City inspired atmosphere, street photography lens",
+    "neg": "empty streets, daylight, modern shopping mall, Western architecture",
+    "tags": [
+      "夜市",
+      "街景",
+      "霓虹",
+      "傳統騎樓",
+      "9:16"
+    ],
+    "gradient": "linear-gradient(135deg,#1a0808,#3d1010)",
+    "emoji": "🏮",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以九龍城寨為靈感，呈現霓虹夜雨中的傳統夜市建築密度"
+      }
+    ]
+  },
+  {
+    "id": 130,
+    "title": "白色洞穴住宅",
+    "category": "architecture",
+    "ratio": "16:9",
+    "prompt": "Mediterranean cave house architecture, organic whitewashed cavern dwelling built into cliff face, cascading terraces with bougainvillea flowers, infinity pool merging with Aegean Sea horizon, warm golden sunlight casting deep shadows in curved archways, Santorini-inspired but more cave-like, architectural photography at golden hour, extreme wide angle",
+    "neg": "dark cave, gothic, no sea view, modern glass facade",
+    "tags": [
+      "洞穴住宅",
+      "白色建築",
+      "地中海",
+      "無邊際泳池"
+    ],
+    "gradient": "linear-gradient(135deg,#f8f4e8,#e8e0d0)",
+    "emoji": "🏰",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以聖托里尼洞穴建築為靈感，強調有機曲線與海天一色"
+      }
+    ]
+  },
+  {
+    "id": 131,
+    "title": "蜜蜂複眼微距",
+    "category": "macro",
+    "ratio": "1:1",
+    "prompt": "Extreme macro photograph of honey bee compound eye, razor-sharp hexagonal ommatidia pattern in stunning detail, iridescent reflections within each facet, fine facial hairs visible around the eye, warm amber and brown tones, black abstract background, scientific macro photography, Canon MP-E 65mm macro lens, ring flash lighting, focus stacking technique",
+    "neg": "blurry, low magnification, horror distortion, cartoon style",
+    "tags": [
+      "微距攝影",
+      "蜜蜂",
+      "複眼",
+      "昆蟲",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#4d3000,#8b5500)",
+    "emoji": "🐝",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以焦點堆疊技術拍攝蜜蜂複眼，呈現超高放大率下的幾何美感"
+      }
+    ]
+  },
+  {
+    "id": 132,
+    "title": "雪花晶體微距",
+    "category": "macro",
+    "ratio": "1:1",
+    "prompt": "Extreme close-up macro photograph of single snowflake crystal on dark velvet surface, perfectly symmetrical six-sided dendrite structure, intricate branching patterns with sub-branches, subtle blue and white color gradations, surrounding unfocused snowflakes creating bokeh, controlled studio macro photography, diffused backlit setup, Nikon macro lens, sharp crystalline detail",
+    "neg": "fake prop snowflake, CGI render, warm tones, abstract",
+    "tags": [
+      "雪花",
+      "微距攝影",
+      "晶體",
+      "冬季",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#b8d8f8,#ddeeff)",
+    "emoji": "❄️",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以暗色天鵝絨背景反射雪花晶體，呈現六角對稱的數學之美"
+      }
+    ]
+  },
+  {
+    "id": 133,
+    "title": "玫瑰花蕊微距",
+    "category": "macro",
+    "ratio": "1:1",
+    "prompt": "Extreme macro photograph of rose flower center, spiral arrangement of yellow stamens and pistil in mathematical perfection, soft pink petals framing the center in gentle bokeh, morning dew droplets on petal edges, warm golden rim lighting, green stem visible in extreme bokeh background, intimate floral macro photography, 100mm macro lens f/2.8",
+    "neg": "full flower wide shot, artificial flower, cold lighting, no detail",
+    "tags": [
+      "玫瑰",
+      "花蕊",
+      "微距攝影",
+      "植物",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#f8d0d8,#f0a8b8)",
+    "emoji": "🌹",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以早晨露珠與黃金側光強調花蕊的數學排列之美"
+      }
+    ]
+  },
+  {
+    "id": 134,
+    "title": "水滴碰撞瞬間",
+    "category": "macro",
+    "ratio": "1:1",
+    "prompt": "High-speed macro photograph of water droplet collision, perfect crown splash formation captured at peak moment, multiple secondary droplets suspended in air, rich cobalt blue water with green food coloring gradient, dark background making droplets luminous, studio strobe freezing motion, ultra-sharp detail of each tiny rivulet, liquid sculpture photography",
+    "neg": "blurry, static water, no splash formation, outdoor muddy water",
+    "tags": [
+      "水滴",
+      "高速攝影",
+      "微距",
+      "液體藝術",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#001a33,#003366)",
+    "emoji": "💧",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以微秒閃光燈凍結水冠形成瞬間，展現流體動力學之美"
+      }
+    ]
+  },
+  {
+    "id": 135,
+    "title": "蜻蜓翅膀紋理",
+    "category": "macro",
+    "ratio": "16:9",
+    "prompt": "Extreme macro photograph of dragonfly wing surface, intricate vein network creating iridescent stained-glass pattern, rainbow spectrum reflected from wing membrane, detailed texture of individual cells between veins, shallow depth of field blurring background to pure black, backlit natural light source, wide macro composition showing full wing span, stunning entomological detail",
+    "neg": "full dragonfly portrait, blurry wings, artificial color grading",
+    "tags": [
+      "蜻蜓",
+      "翅膀",
+      "微距攝影",
+      "彩虹",
+      "16:9"
+    ],
+    "gradient": "linear-gradient(135deg,#003322,#006644)",
+    "emoji": "🪲",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以背光照射翅膀薄膜，呈現蜻蜓翅脈的彩虹色散效應"
+      }
+    ]
+  },
+  {
+    "id": 136,
+    "title": "菌絲網路微距",
+    "category": "macro",
+    "ratio": "1:1",
+    "prompt": "Macro photograph of mycelium fungal network on decaying wood, white thread-like hyphae creating intricate web pattern, bioluminescent green glow effect on darker specimens, rich brown and orange tones of decomposing substrate, depth layers showing network structure, scientific nature macro photography, ring flash and diffused side lighting, focus stacking for sharpness throughout",
+    "neg": "edible mushroom food photo, artificial fungus model, cartoon style",
+    "tags": [
+      "菌絲",
+      "真菌網路",
+      "微距攝影",
+      "自然科學",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#1a2800,#2d4400)",
+    "emoji": "🍄",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以科學攝影視角呈現菌絲網路，如同自然界的神經系統"
+      }
+    ]
+  },
+  {
+    "id": 137,
+    "title": "蝴蝶鱗片微距",
+    "category": "macro",
+    "ratio": "1:1",
+    "prompt": "Extreme close-up macro of butterfly wing scales, overlapping tile-like iridescent scale structures, morpho butterfly electric blue shimmer with structural coloration, individual scales sharp with fine ridges visible under magnification, rich depth of color from multiple angles, scientific entomology photography, SEM-inspired aesthetic but photographic, ring flash macro lighting",
+    "neg": "full butterfly photo, painted wing, dull colors, blurry scales",
+    "tags": [
+      "蝴蝶",
+      "鱗片",
+      "微距攝影",
+      "電子顯微鏡",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#001a66,#0033cc)",
+    "emoji": "🦋",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以電子顯微鏡美學啟發，捕捉嗎啡蝶鱗片的結構色彩"
+      }
+    ]
+  },
+  {
+    "id": 138,
+    "title": "咖啡豆表面微距",
+    "category": "macro",
+    "ratio": "1:1",
+    "prompt": "Extreme macro photograph of single roasted coffee bean surface, deep dark brown furrows and ridges in sharp relief, center crease running through the bean, subtle oils shimmering on surface, warm dark chocolate and mahogany tones, dramatic side lighting creating deep texture shadows, black background, food macro photography, Laowa 25mm macro lens, 5:1 magnification ratio",
+    "neg": "coffee in cup, latte art, wide shot of many beans, blurry",
+    "tags": [
+      "咖啡豆",
+      "微距攝影",
+      "食物攝影",
+      "質地",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#1a0a00,#2d1500)",
+    "emoji": "☕",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以強側光強調咖啡豆表面的褶皺紋理，呈現烘焙痕跡"
+      }
+    ]
+  },
+  {
+    "id": 139,
+    "title": "電路板俯視微距",
+    "category": "macro",
+    "ratio": "1:1",
+    "prompt": "Overhead macro photograph of colorful circuit board, dense PCB landscape with green substrate, golden solder traces like city roads from above, miniature electronic components as buildings, capacitors and resistors in sharp detail, aerial city metaphor, dramatic top-down lighting with shallow depth of field, tech macro photography, warm and cool light mix",
+    "neg": "blurry, damaged board, low magnification showing full board, dirty",
+    "tags": [
+      "電路板",
+      "微距攝影",
+      "科技",
+      "俯視",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#003300,#005500)",
+    "emoji": "🔬",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以俯視視角將電路板轉化為鳥瞰城市景觀的視覺隱喻"
+      }
+    ]
+  },
+  {
+    "id": 140,
+    "title": "沙粒質地微距",
+    "category": "macro",
+    "ratio": "1:1",
+    "prompt": "Extreme close-up macro photograph of beach sand grains, each grain a unique translucent gemstone of varied color, rose quartz pink, clear crystal, obsidian black and feldspar orange grains, arranged like a mosaic with spaces between visible, backlit studio setup revealing internal color, scale reference impossible without context, geological macro photography",
+    "neg": "beach overview, dirty muddy sand, uniform color sand, blurry",
+    "tags": [
+      "沙粒",
+      "微距攝影",
+      "礦物",
+      "地質",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#c8a878,#e0c090)",
+    "emoji": "🏖️",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以背光照射沙粒，將每顆沙粒還原為獨特的微型寶石"
+      }
+    ]
+  },
+  {
+    "id": 141,
+    "title": "極光冰島夜空",
+    "category": "landscape",
+    "ratio": "16:9",
+    "prompt": "Northern lights aurora borealis over Iceland landscape, dramatic green and purple aurora curtains dancing above frozen black sand beach, silhouetted sea stacks in foreground, starry sky visible through aurora, long exposure photography, reflection of aurora in shallow tidal pools, Milky Way faintly visible, ultra-wide angle 14mm lens, cold blue midnight atmosphere",
+    "neg": "daytime, cloudy sky, no aurora, warm colors, tropical",
+    "tags": [
+      "極光",
+      "冰島",
+      "夜空",
+      "長時間曝光",
+      "16:9"
+    ],
+    "gradient": "linear-gradient(135deg,#001a10,#003322)",
+    "emoji": "🌌",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以超廣角捕捉冰島黑沙灘與極光的倒影，最大化廣角透視"
+      }
+    ]
+  },
+  {
+    "id": 142,
+    "title": "粉紅流沙漠",
+    "category": "landscape",
+    "ratio": "16:9",
+    "prompt": "Pink sand desert at golden hour, rolling dunes of rose and blush pink desert sand, long shadows from dune crests, solitary camel silhouette in middle distance, clear azure sky, heat haze shimmer on horizon, vast open space and silence communicated through composition, aerial drone perspective, Sahara-inspired but with unique pink mineral sand coloration",
+    "neg": "green oasis, cold weather, rainy, crowded",
+    "tags": [
+      "粉紅沙漠",
+      "沙丘",
+      "黃金時刻",
+      "航拍",
+      "16:9"
+    ],
+    "gradient": "linear-gradient(135deg,#f8c8c0,#e0a898)",
+    "emoji": "🏜️",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以航拍視角突顯粉色沙丘的漸層與孤獨駱駝的尺度對比"
+      }
+    ]
+  },
+  {
+    "id": 143,
+    "title": "雨後霓虹倒影",
+    "category": "social",
+    "ratio": "1:1",
+    "prompt": "Night street after rain, neon signs reflecting in wet pavement puddles creating abstract color pools, lone pedestrian with umbrella in middle distance, bokeh light orbs from passing cars, deep perspective down narrow urban alley, pink and blue neon glow dominates, cinematic street photography, 35mm film aesthetic, grain texture, Tokyo Shinjuku inspired atmosphere",
+    "neg": "daylight, dry pavement, suburban, no reflections, happy tourism",
+    "tags": [
+      "霓虹",
+      "雨後倒影",
+      "街拍",
+      "東京",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#0a0010,#1a0028)",
+    "emoji": "🌧️",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以雨後濕地的霓虹倒影創造超現實的色彩疊影效果"
+      }
+    ]
+  },
+  {
+    "id": 144,
+    "title": "精品香水廣告攝影",
+    "category": "product",
+    "ratio": "9:16",
+    "prompt": "Luxury perfume bottle product photography, elegant crystal flacon with gold cap, placed on black marble surface with scattered rose petals, soft volumetric light from upper left creating caustic reflections through glass, warm amber liquid visible, editorial advertising photography, Canon 100mm macro lens, professional retouching clean background, high-end fragrance brand aesthetic",
+    "neg": "plastic bottle, cluttered background, amateur lighting, low budget",
+    "tags": [
+      "香水",
+      "精品廣告",
+      "商品攝影",
+      "大理石",
+      "9:16"
+    ],
+    "gradient": "linear-gradient(135deg,#1a0a00,#3d2000)",
+    "emoji": "🌸",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以大理石場景與玫瑰花瓣強調頂奢香水的感官敘事"
+      }
+    ]
+  },
+  {
+    "id": 145,
+    "title": "運動鞋懸浮攝影",
+    "category": "product",
+    "ratio": "1:1",
+    "prompt": "Athletic sneaker levitation product photography, premium limited edition running shoe floating in mid-air against pure white background, dynamic debris and dust particles suspended around shoe as if just landed, dramatic underlighting in blue and white, bold shadow beneath, clean editorial product photography, commercial advertising style, Nike or Adidas campaign aesthetic",
+    "neg": "dirty shoe, foot inside, flat lay without dynamism, outdoor on feet",
+    "tags": [
+      "運動鞋",
+      "懸浮攝影",
+      "商品攝影",
+      "廣告",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#e8f4fe,#b8d8f8)",
+    "emoji": "👟",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以懸浮加動態粉塵強化運動鞋的能量感與廣告張力"
+      }
+    ]
+  },
+  {
+    "id": 146,
+    "title": "奢華手錶特寫",
+    "category": "product",
+    "ratio": "1:1",
+    "prompt": "Luxury mechanical watch macro product photography, intricate dial details with Roman numerals and guilloché texture, Swiss movement partially visible through exhibition caseback, warm tungsten studio lighting on gold and silver case, reflection of studio softbox in polished bezel, black velvet display pad, Rolex or Patek Philippe level advertising photography, extreme detail focus",
+    "neg": "plastic watch, digital display, dark photography, dirty watch",
+    "tags": [
+      "手錶",
+      "奢華",
+      "商品攝影",
+      "瑞士機械",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#1a1200,#2d2000)",
+    "emoji": "⌚",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以鎢絲光源強調金屬光澤，展現瑞士機械錶的製錶工藝"
+      }
+    ]
+  },
+  {
+    "id": 147,
+    "title": "電音音樂節海報",
+    "category": "poster",
+    "ratio": "9:16",
+    "prompt": "Electronic music festival event poster design, glowing neon wireframe landscape with geometric prisms, UV reactive color palette of electric blue, hot pink and acid yellow, DJ silhouette above crowd illustration, bold condensed typeface for lineup names, ticket information section at bottom, laser beam effects, dark background with chromatic aberration effect, festival brand identity design",
+    "neg": "rock concert aesthetic, acoustic instruments, daytime outdoor, serif fonts",
+    "tags": [
+      "電子音樂",
+      "音樂節",
+      "海報設計",
+      "霓虹",
+      "9:16"
+    ],
+    "gradient": "linear-gradient(135deg,#000a1a,#001433)",
+    "emoji": "🎧",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以 UV 螢光色彩和雷射光效打造沉浸式電子音樂節氛圍"
+      }
+    ]
+  },
+  {
+    "id": 148,
+    "title": "有機護膚品牌Logo",
+    "category": "logo",
+    "ratio": "1:1",
+    "prompt": "Organic skincare brand logo design, delicate botanical line illustration of herb and leaf motifs encircling clean serif wordmark, sage green and cream color palette, hand-drawn feel with professional execution, natural and trustworthy brand aesthetic, minimalist negative space usage, suitable for embossing and product packaging, clean vector format",
+    "neg": "synthetic chemical lab aesthetic, neon colors, complex cluttered design",
+    "tags": [
+      "有機",
+      "護膚品",
+      "Logo設計",
+      "植物",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#e8f5e0,#d4e8c0)",
+    "emoji": "🌱",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以手繪植物線條賦予品牌自然溫度，結合簡潔的無襯線字體"
+      }
+    ]
+  },
+  {
+    "id": 149,
+    "title": "復古車廠品牌標誌",
+    "category": "logo",
+    "ratio": "1:1",
+    "prompt": "Vintage automotive garage brand logo design, classic American muscle car silhouette within circular badge, bold Art Deco typography, chrome and midnight blue color palette, radiating speed lines in background, vintage fuel station sign aesthetic, 1950s era design inspiration, professional vector logo suitable for signage and workwear embroidery",
+    "neg": "modern EV car, tech startup style, pastel colors, overly complex",
+    "tags": [
+      "復古",
+      "汽車",
+      "徽章Logo",
+      "Art Deco",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#0d1a2d,#1a2d44)",
+    "emoji": "🚗",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以 1950 年代美式汽車文化為根基，打造復古徽章型 Logo"
+      }
+    ]
+  },
+  {
+    "id": 150,
+    "title": "海邊金發人像",
+    "category": "portrait",
+    "ratio": "9:16",
+    "prompt": "Golden hour beach portrait photography, young woman with windswept blonde hair, soft sand dunes background in warm bokeh, backlit halo of golden sunlight creating rim light around silhouette, candid laughing expression, warm orange and gold color grade, lifestyle editorial photography, 85mm f/1.4 shallow depth of field, film-inspired warm tones, emotional and authentic",
+    "neg": "studio flash, overexposed, artificial hair, staged pose, cold colors",
+    "tags": [
+      "人像",
+      "黃金時刻",
+      "海邊",
+      "自然光",
+      "9:16"
+    ],
+    "gradient": "linear-gradient(135deg,#c86400,#e89640)",
+    "emoji": "🏄",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以逆光黃金時刻強調海邊人像的溫暖情緒與風中動感"
+      }
+    ]
+  },
+  {
+    "id": 151,
+    "title": "老人智慧人像",
+    "category": "portrait",
+    "ratio": "1:1",
+    "prompt": "Elderly man character portrait photography, deeply weathered face with profound wrinkles telling life's stories, warm kind eyes with cataracts creating milky depth, silver stubble beard, soft window light from side creating dramatic yet gentle shadows, black and white with subtle warm tone, 50mm prime lens tight crop, documentary portrait photography, National Geographic aesthetic",
+    "neg": "ageist, unflattering, harsh flash, colorful distracting background",
+    "tags": [
+      "老人",
+      "人像攝影",
+      "黑白",
+      "生命故事",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#1a1a18,#2d2d28)",
+    "emoji": "👴",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以單側窗光和黑白影調捕捉歲月在面孔上留下的生命印記"
+      }
+    ]
+  },
+  {
+    "id": 152,
+    "title": "台灣茶道靜物",
+    "category": "product",
+    "ratio": "1:1",
+    "prompt": "Taiwanese tea ceremony still life product photography, celadon gongfu tea set arrangement, steam rising from tea cup, raw pu-erh tea cake beside bamboo tea tray, morning light through rice paper window creating soft diffused illumination, earthy clay teapot in foreground sharp, bokeh background of tea plantation, minimal East Asian aesthetic, warm and meditative",
+    "neg": "Western tea bag, commercial plastic cups, harsh studio flash, cluttered",
+    "tags": [
+      "台灣茶道",
+      "靜物攝影",
+      "功夫茶",
+      "東方美學",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#2d4400,#446618)",
+    "emoji": "🍵",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以宣紙窗光和青瓷茶具呈現台灣功夫茶道的清靜禪意"
+      }
+    ]
+  }
+];
+
 var CAT_META = {
   social:{label:'社群媒體',emoji:'📱',desc:'Instagram、YouTube、TikTok 等平台專用'},
   product:{label:'商品攝影',emoji:'📦',desc:'電商與產品展示提示語'},
   poster:{label:'活動海報',emoji:'🎪',desc:'活動、演唱會、展覽海報設計'},
   logo:{label:'Logo 設計',emoji:'⭐',desc:'品牌識別與標誌設計'},
   portrait:{label:'人像攝影',emoji:'👤',desc:'人物與角色攝影風格'},
-  landscape:{label:'風景場景',emoji:'🌄',desc:'自然風景與城市場景'}
+  landscape:{label:'風景場景',emoji:'🌄',desc:'自然風景與城市場景'},
+  uiux:{label:'UI/UX 設計',emoji:'🖥️',desc:'App 介面、網頁設計、互動原型'},
+  illustration:{label:'插畫創作',emoji:'🎨',desc:'數位插畫、概念藝術、繪本風格'},
+  architecture:{label:'建築設計',emoji:'🏛️',desc:'室內外建築、空間攝影與設計'},
+  macro:{label:'微距攝影',emoji:'🔬',desc:'極近距離的自然與物件細節攝影'}
 };
 
 var BD = {
@@ -646,7 +1819,7 @@ var copies     = parseInt(localStorage.getItem('pv_copies')||'0');
 var built      = parseInt(localStorage.getItem('pv_built')||'0');
 var custom     = JSON.parse(localStorage.getItem('pv_custom')||'[]');
 var apiKey     = localStorage.getItem('pv_apikey')||'';
-var allPrompts = BASE.concat(custom);
+var allPrompts = BASE.concat(EXTRA_PROMPTS).concat(custom);
 var curFilter  = 'all';
 var curModalId = null;
 var bState     = {subject:[],style:[],lighting:[],camera:[],render:[]};
@@ -833,7 +2006,7 @@ function renderProfile() {
 function updateCounts() {
   var n=favs.length;
   document.getElementById('sb-fav-badge').textContent=n;
-  document.getElementById('sb-explore-badge').textContent=allPrompts.length;
+  document.getElementById('sb-explore-badge').textContent=allPrompts.length; document.getElementById('explore-count').textContent=allPrompts.filter(function(p){return curFilter==='all'||p.category===curFilter||p.ratio===curFilter||p.tags.some(function(t){return t===curFilter;});}).length+' 個';
   document.getElementById('fav-count-display').textContent=n+' 個';
   var tb=document.getElementById('tab-fav-badge');
   tb.textContent=n; tb.style.display=n>0?'flex':'none';
