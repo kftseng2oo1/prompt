@@ -3,8 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
 <title>PromptVault · AI 提示語資料庫</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700&display=swap&display=swap" rel="stylesheet">
@@ -353,6 +351,8 @@ textarea.ai-input{resize:vertical;min-height:80px}
         <div class="filter-tag" data-filter="illustration">插畫</div>
         <div class="filter-tag" data-filter="architecture">建築</div>
         <div class="filter-tag" data-filter="macro">微距攝影</div>
+        <div class="filter-tag" data-filter="personal">🌟 個人風格</div>
+        <div class="filter-tag" data-filter="personal2">🎖️ 專業領域形象</div>
     </div>
     <div class="masonry-grid" id="prompt-grid"></div>
   </div>
@@ -1790,6 +1790,151 @@ var EXTRA_PROMPTS = [
   }
 ];
 
+var PERSONAL_PROMPTS = [
+  {id:201,title:"學者風：現代圖書館",category:"personal",ratio:"4:3",
+   prompt:"Photorealistic portrait of a scholarly Asian middle-aged man in a well-fitted navy blue suit and light blue shirt with refined glasses, sitting in a bright modern university library, holding a book, confident and wise smile looking at camera, soft professional window lighting, bokeh bookshelves and campus view behind, high-end editorial photography, Canon 85mm f/1.4",
+   neg:"bad anatomy, blurry face, distorted, extra fingers, low quality, ugly, overexposed",
+   tags:["個人風格","學者","圖書館","西裝","寫實攝影"],
+   gradient:"linear-gradient(135deg,#1a2744,#2d3d6b)",emoji:"📚",
+   versions:[{ver:"v1",change:"深藍西裝搭配柔和圖書館光線，強調睿智學者形象"}]},
+
+  {id:202,title:"型男風：城市黃昏露台",category:"personal",ratio:"9:16",
+   prompt:"Cinematic portrait of a sophisticated Asian man in dark brown leather jacket and black t-shirt, standing on a high-rise rooftop terrace at golden hour dusk, holding a whiskey glass, gazing at the glowing city skyline below, warm sunset hues and city lights reflecting on his face, mature and confident expression, movie still quality, 50mm anamorphic lens",
+   neg:"blurry, bad face, distorted body, poor lighting, cartoon style",
+   tags:["個人風格","電影感","露台","皮夾克","黃昏"],
+   gradient:"linear-gradient(135deg,#1a0800,#3d1a00)",emoji:"🥃",
+   versions:[{ver:"v1",change:"黃昏城市光線映照皮夾克，呈現成熟型男的都市質感"}]},
+
+  {id:203,title:"藝術插畫：水彩學者",category:"personal",ratio:"1:1",
+   prompt:"Artistic watercolor and ink illustration of a scholarly Asian man in a purple linen shirt, writing in a notebook, surrounded by abstract watercolor splashes in lavender, tea brown and indigo, fine ink linework of books, flasks, charts and heart balloons in soft background, intellectual and creative fusion aesthetic, warm artistic atmosphere, painterly digital art",
+   neg:"photorealistic, 3D render, harsh colors, childish cartoon, poor proportions",
+   tags:["個人風格","水彩插畫","藝術風","知識","創意"],
+   gradient:"linear-gradient(135deg,#4a2d6b,#2d1a44)",emoji:"🎨",
+   versions:[{ver:"v1",change:"融合水彩墨漬與線條，以藝術語言呈現知識與創意的內在世界"}]},
+
+  {id:204,title:"暖意風：咖啡廳抓拍",category:"personal",ratio:"4:3",
+   prompt:"Candid lifestyle portrait of a friendly Asian man in light blue V-neck casual shirt, sitting in a cozy cafe with lush green plants and warm wooden furniture, caught mid-laugh at a friend's joke, holding a coffee cup, laptop and books on the table, warm soft natural side lighting, approachable and genuine personality, lifestyle editorial photography",
+   neg:"forced smile, studio backdrop, harsh flash, cluttered background, bad anatomy",
+   tags:["個人風格","咖啡廳","親切","自然笑容","生活感"],
+   gradient:"linear-gradient(135deg,#3d2010,#6b4020)",emoji:"☕",
+   versions:[{ver:"v1",change:"自然的抓拍時刻與溫暖咖啡廳氛圍，呈現平易近人的真實性格"}]},
+
+  {id:205,title:"科技未來風：全息數據中心",category:"personal",ratio:"16:9",
+   prompt:"Cinematic sci-fi portrait of an Asian tech visionary in dark technical fabric jacket with smart watch, standing before a massive data center glowing with blue and purple neon lights, reaching out to interact with floating translucent holographic data charts, server racks in background, dramatic neon rim lighting on face, futuristic and commanding presence, wide angle cinematic",
+   neg:"cheap costume, blurry hologram, poor lighting, low budget sci-fi, bad face",
+   tags:["個人風格","科幻","數據中心","全息","未來感"],
+   gradient:"linear-gradient(135deg,#001433,#0d0028)",emoji:"🖥️",
+   versions:[{ver:"v1",change:"藍紫霓虹數據中心環境強調科技遠見者的未來感權威形象"}]},
+
+  {id:206,title:"復古探險風：老式蒸汽火車",category:"personal",ratio:"4:3",
+   prompt:"Vintage film grain portrait of an Asian explorer man in cream bucket hat and plaid flannel shirt, standing beside an antique steam locomotive at a historical train station, holding an aged folded map, looking determinedly into the distance toward mountains, soft warm sepia-tinted light through steam clouds, nostalgic adventurous spirit, Kodachrome film aesthetic",
+   neg:"modern setting, digital clean look, bad hat, forced expression, no film grain",
+   tags:["個人風格","復古探險","蒸汽火車","帽子","懷舊"],
+   gradient:"linear-gradient(135deg,#4d3800,#7a5a10)",emoji:"🚂",
+   versions:[{ver:"v1","change":"仿 Kodachrome 底片色調，米白帽搭配格紋衫重現探險者的懷舊浪漫"}]},
+
+  {id:207,title:"戶外自然風：山頂觀景",category:"personal",ratio:"9:16",
+   prompt:"Dynamic outdoor portrait of an active Asian man in functional outdoor technical jacket and quick-dry pants, carrying a hiking backpack, standing triumphantly at a mountain summit viewpoint, warm genuine smile gazing at rolling mountain ridges and blue sky, fresh alpine air atmosphere, golden hour sidelight, lifestyle outdoor photography, Sony 35mm",
+   neg:"studio backdrop, urban setting, forced pose, bad anatomy, overexposed sky",
+   tags:["個人風格","戶外","山頂","登山","自然"],
+   gradient:"linear-gradient(135deg,#1a3310,#2d5518)",emoji:"🏔️",
+   versions:[{ver:"v1","change":"山頂逆光與戶外裝備呈現活力十足、享受自然的真實一面"}]},
+
+  {id:208,title:"奢華晚宴風：古典劇院",category:"personal",ratio:"9:16",
+   prompt:"High fashion luxury portrait of an elegant Asian gentleman in impeccably tailored black tuxedo with bow tie and platinum cufflinks, holding a champagne flute, engaging in polite conversation at a grand classical theater foyer, red carpet, crystal chandeliers, guests in evening gowns softly blurred in background, warm grand ballroom lighting, sophistication personified",
+   neg:"casual clothes, poor tailoring, dark underexposed, empty venue, bad posture",
+   tags:["個人風格","燕尾服","奢華","晚宴","古典劇院"],
+   gradient:"linear-gradient(135deg,#1a1200,#2d2000)",emoji:"🥂",
+   versions:[{ver:"v1","change":"金碧輝煌的劇院環境與精裁燕尾服展現最高規格的儒雅紳士形象"}]},
+
+  {id:209,title:"抽象藝術：幾何智識拼貼",category:"personal",ratio:"1:1",
+   prompt:"Abstract art collage portrait of an Asian intellectual, facial features artistically deconstructed and merged with geometric shapes, triangles, circles and angular forms, surrounded by floating book linework, data charts, diagrams, bold color blocks in deep navy, burnt orange and gold, dynamic visual tension between intellect and structure, conceptual mixed-media art, Picasso meets Bauhaus",
+   neg:"photorealistic, boring plain portrait, muddy colors, bad geometry, childish",
+   tags:["個人風格","抽象藝術","幾何","拼貼","概念藝術"],
+   gradient:"linear-gradient(135deg,#0d1a2d,#3d2800)",emoji:"🔷",
+   versions:[{ver:"v1","change":"將面部特徵解構重組為幾何拼貼，以包浩斯語言呈現理性知識的內核"}]},
+
+  {id:210,title:"街頭潮流風：都市霓虹夜拍",category:"personal",ratio:"9:16",
+   prompt:"Urban street photography portrait of a stylish Asian man in trendy oversized trench coat with baseball cap and wireless earphones, striding confidently through a neon-lit urban street filled with colorful graffiti murals and glowing shop signs, intense confident direct gaze at camera, dynamic motion blur of passing traffic behind, bokeh neon reflections on wet pavement, contemporary street style",
+   neg:"suburban, daytime, no neon, stiff pose, poor street environment, blurry face",
+   tags:["個人風格","街頭潮流","霓虹","棒球帽","都市夜景"],
+   gradient:"linear-gradient(135deg,#0a0010,#1a0028)",emoji:"🎧",
+   versions:[{ver:"v1","change":"霓虹夜街與潮流外搭呈現當代都市男士的自信與自由氣場"}]}
+];
+
+
+var PERSONAL_PROMPTS_2 = [
+  {id:301,title:"宗教修行風：禪意寺院",category:"personal2",ratio:"4:3",
+   prompt:"Photorealistic portrait of a serene Asian middle-aged man in humble dark brown Buddhist monk robes, gentle compassionate smile, standing in a traditional Zen temple courtyard with wooden main hall and stone lanterns softly blurred behind, warm natural light falling gently on face, expression of enlightenment and inner peace, peaceful meditative atmosphere, Canon 85mm portrait lens",
+   neg:"horror, dark shadows, harsh flash, Western church, cluttered, bad anatomy, distorted face",
+   tags:["個人風格II","禪意","寺院","修行","寧靜"],
+   gradient:"linear-gradient(135deg,#2d1a00,#4d3010)",emoji:"🏯",
+   versions:[{ver:"v1",change:"柔和自然光與深褐色僧袍呈現超然智慧的開悟氣質"}]},
+
+  {id:302,title:"哲學沉思風：古典書房",category:"personal2",ratio:"9:16",
+   prompt:"Cinematic portrait of a deep-thinking Asian philosopher in vintage English tweed suit with vest, sitting in a classical European study lined with antique leather-bound books, holding an old smoking pipe in one hand and a heavy hardcover tome in the other, profoundly pensive gaze, warm chiaroscuro lighting from desk lamp and fireplace glow carving his wise facial lines, intellectual gravitas",
+   neg:"bright daylight, casual clothes, empty room, no books, forced smile, bad anatomy",
+   tags:["個人風格II","哲學家","古典書房","沉思","電影感"],
+   gradient:"linear-gradient(135deg,#1a1000,#3d2800)",emoji:"🪄",
+   versions:[{ver:"v1",change:"壁爐與台燈的明暗對比光線雕刻哲人深邃思考的面部輪廓"}]},
+
+  {id:303,title:"科學研究風：高科技實驗室",category:"personal2",ratio:"16:9",
+   prompt:"Professional authoritative portrait of an Asian scientist in crisp white lab coat, confident warm smile, seated before an electron microscope and multi-screen workstation displaying complex material structure analysis charts and scientific data, clean professional white and blue color grading, high-tech laboratory environment, peer-reviewed authority, Nature magazine cover quality portrait",
+   neg:"dirty lab coat, cluttered messy lab, bad posture, dark underexposed, amateur lighting",
+   tags:["個人風格II","科學家","實驗室","白袍","學術"],
+   gradient:"linear-gradient(135deg,#e8f4fe,#b8d8f8)",emoji:"🔬",
+   versions:[{ver:"v1",change:"白藍色調的精密實驗室環境突顯嚴謹學術與科研的專業權威"}]},
+
+  {id:304,title:"宇航探索風：月球基地",category:"personal2",ratio:"9:16",
+   prompt:"Epic cinematic astronaut portrait of a visionary Asian man in detailed white spacesuit with mission patches and insignia, no helmet, determined forward-looking expression, standing at a lunar base observation window, vast black cosmos with countless stars and the beautiful blue Earth hanging in distance visible through viewport, cold cabin ambient light reflecting off face, awe-inspiring scale",
+   neg:"cheap costume, blurry space, bad face, green screen obvious, no atmosphere, dark",
+   tags:["個人風格II","宇航員","月球基地","太空","史詩"],
+   gradient:"linear-gradient(135deg,#000a1a,#001433)",emoji:"🚀",
+   versions:[{ver:"v1",change:"艙內冷光與窗外地球的史詩對比，凝聚宇航先驅的遠見神情"}]},
+
+  {id:305,title:"全球財經風：證券交易所",category:"personal2",ratio:"16:9",
+   prompt:"Powerful authoritative portrait of an Asian financial titan in perfectly tailored deep navy bespoke suit with silk tie, holding a leather notebook and metal fountain pen, commanding presence standing at the center of a bustling global stock exchange trading floor, background filled with massive glowing market ticker boards flashing green and red numbers, sharp dynamic business lighting",
+   neg:"casual wear, empty trading floor, dark background, bad suit fit, blurry tickers",
+   tags:["個人風格II","財經","交易所","西裝","金融巨頭"],
+   gradient:"linear-gradient(135deg,#0d1a2d,#1a2d44)",emoji:"📈",
+   versions:[{ver:"v1",change:"閃爍的紅綠行情看板與精裁西裝共同塑造金融指揮官的霸氣場域"}]},
+
+  {id:306,title:"新聞播報風：現場記者會",category:"personal2",ratio:"16:9",
+   prompt:"Photojournalism style portrait of a serious authoritative Asian journalist in sharp dark suit, focused professional expression, standing at a press conference podium bearing PRESS signage, multiple media microphones from major broadcasters in foreground with colored logos, blurred press conference backdrop behind, camera flashes subtly lighting the scene, CNN breaking news aesthetic",
+   neg:"smiling casual, empty room, no microphones, poor suit, overexposed flash, bad posture",
+   tags:["個人風格II","記者","記者會","發言台","新聞"],
+   gradient:"linear-gradient(135deg,#1a1a2d,#2d2d44)",emoji:"🎙️",
+   versions:[{ver:"v1",change:"多方麥克風與發言台強化新聞現場的臨場張力與媒體權威感"}]},
+
+  {id:307,title:"演藝界榮耀風：頒獎典禮",category:"personal2",ratio:"9:16",
+   prompt:"Glamorous award ceremony portrait of an elegant Asian man in luxurious black velvet tuxedo with black bow tie, beaming with immense pride and grace, standing center stage at a prestigious gala holding a gleaming golden trophy award with both hands, blinding spotlights in warm gold and white behind, blurred adoring audience in darkness, Academy Awards level production quality",
+   neg:"cheap suit, dark stage, no trophy, sad expression, bad tuxedo, poor lighting",
+   tags:["個人風格II","頒獎典禮","燕尾服","金像獎","榮耀"],
+   gradient:"linear-gradient(135deg,#1a1200,#3d2d00)",emoji:"🏆",
+   versions:[{ver:"v1",change:"舞台聚光燈與金色獎座共同凝固這位演藝大師的至高榮耀時刻"}]},
+
+  {id:308,title:"軍事指揮風：戰略作戰室",category:"personal2",ratio:"16:9",
+   prompt:"Cinematic military portrait of a high-ranking Asian general in immaculate dark green dress uniform adorned with rows of colorful medals and service ribbons, both hands on a command table covered in tactical maps and sand terrain models, flanked by staff officers taking notes, cold strategic gaze, calm yet formidable authority, war room with electronic tactical screens, dramatic low-key film lighting",
+   neg:"civilian clothes, no medals, bright cheerful lighting, empty room, bad posture, cartoon",
+   tags:["個人風格II","將軍","作戰室","軍裝","勳章"],
+   gradient:"linear-gradient(135deg,#0d1a00,#1a2d00)",emoji:"⭐",
+   versions:[{ver:"v1",change:"低調電影光線與滿胸勳章展現運籌帷幄的最高軍事指揮威嚴"}]},
+
+  {id:309,title:"體育毅力風：馬拉松終點",category:"personal2",ratio:"9:16",
+   prompt:"Dynamic sports portrait of a determined Asian man in professional marathon running vest with race bib number 54493 pinned to chest, heavy finisher medal hanging around neck, entire body glistening with sweat under bright finish line lighting, triumphant yet exhausted smile filled with pride, blurred FINISH line banner and cheering crowd bokeh background, raw human endurance captured",
+   neg:"clean dry face, no medal, indoor gym, static pose, dark background, no crowd",
+   tags:["個人風格II","馬拉松","終點線","完賽獎牌","毅力"],
+   gradient:"linear-gradient(135deg,#c86400,#e09040)",emoji:"🏅",
+   versions:[{ver:"v1",change:"汗水光澤與完賽獎牌共同記錄突破極限的生命力與自豪時刻"}]},
+
+  {id:310,title:"政治領袖風：國際高峰會",category:"personal2",ratio:"16:9",
+   prompt:"Prestigious international statesman portrait of a dignified Asian political leader in solemn charcoal grey suit with white shirt and tie, delivering an important address at a United Nations General Assembly podium with multiple precision microphones, commanding wise expression, massive blue United Nations emblem backdrop behind him, grand hall scale, Reuters press photo quality",
+   neg:"casual clothes, empty hall, bad posture, no microphone, dark background, smiling too casually",
+   tags:["個人風格II","政治領袖","聯合國","高峰會","演說"],
+   gradient:"linear-gradient(135deg,#001a44,#002d6b)",emoji:"🌐",
+   versions:[{ver:"v1",change:"聯合國藍徽背板與發言台麥克風塑造最高規格國際政治家氣場"}]}
+];
+
 var CAT_META = {
   social:{label:'社群媒體',emoji:'📱',desc:'Instagram、YouTube、TikTok 等平台專用'},
   product:{label:'商品攝影',emoji:'📦',desc:'電商與產品展示提示語'},
@@ -1800,7 +1945,9 @@ var CAT_META = {
   uiux:{label:'UI/UX 設計',emoji:'🖥️',desc:'App 介面、網頁設計、互動原型'},
   illustration:{label:'插畫創作',emoji:'🎨',desc:'數位插畫、概念藝術、繪本風格'},
   architecture:{label:'建築設計',emoji:'🏛️',desc:'室內外建築、空間攝影與設計'},
-  macro:{label:'微距攝影',emoji:'🔬',desc:'極近距離的自然與物件細節攝影'}
+  macro:{label:'微距攝影',emoji:'🔬',desc:'極近距離的自然與物件細節攝影'},
+  personal:{label:'我的個人風格',emoji:'🌟',desc:'以你為主角的 10 種形象場景提示語，可搭配照片使用'},
+  personal2:{label:'我的專業領域形象',emoji:'🎖️',desc:'10 種跨領域專業大師形象：宗教、哲學、科學、軍事、政治等'}
 };
 
 var BD = {
@@ -1821,7 +1968,7 @@ var copies     = parseInt(localStorage.getItem('pv_copies')||'0');
 var built      = parseInt(localStorage.getItem('pv_built')||'0');
 var custom     = JSON.parse(localStorage.getItem('pv_custom')||'[]');
 var apiKey     = localStorage.getItem('pv_apikey')||'';
-var allPrompts = BASE.concat(EXTRA_PROMPTS).concat(custom);
+var allPrompts = BASE.concat(EXTRA_PROMPTS).concat(PERSONAL_PROMPTS).concat(PERSONAL_PROMPTS_2).concat(custom);
 var curFilter  = 'all';
 var curModalId = null;
 var bState     = {subject:[],style:[],lighting:[],camera:[],render:[]};
