@@ -1,0 +1,2467 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>PromptVault · AI 提示語資料庫</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700&display=swap&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0a0a0f; --surface:#111118; --surface2:#18181f;
+  --border:rgba(255,255,255,0.07);
+  --accent:#c8f135; --accent2:#7b5cf5; --accent3:#f5a623;
+  --text:#e8e8f0; --text-muted:#666680; --text-dim:#333345;
+  --radius:14px; --radius-sm:8px;
+  --transition:0.2s cubic-bezier(0.4,0,0.2,1);
+  --sidebar-w:240px; --tabbar-h:64px;
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-serif;min-height:100%;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
+
+.app{display:flex;min-height:100vh;position:relative;z-index:1}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto}
+.logo{padding:28px 24px 20px;border-bottom:1px solid var(--border);margin-bottom:8px;flex-shrink:0}
+.logo-mark{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;letter-spacing:-0.5px;display:flex;align-items:center;gap:8px}
+.logo-mark span{color:var(--accent)}
+.logo-sub{font-size:10px;color:var(--text-muted);letter-spacing:2px;margin-top:3px;text-transform:uppercase}
+.nav-section{padding:8px 12px 4px;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1.5px;margin-top:8px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;margin:1px 8px;border-radius:var(--radius-sm);cursor:pointer;font-size:13.5px;color:var(--text-muted);transition:all var(--transition);user-select:none}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:rgba(200,241,53,0.1);color:var(--accent)}
+.nav-item .icon{width:18px;text-align:center;font-size:14px;flex-shrink:0}
+.nav-item .badge{margin-left:auto;background:var(--surface2);color:var(--text-muted);font-size:10px;padding:1px 7px;border-radius:20px}
+.nav-item.active .badge{background:rgba(200,241,53,0.15);color:var(--accent)}
+.sidebar-footer{margin-top:auto;padding:12px;border-top:1px solid var(--border);flex-shrink:0}
+.api-badge{background:rgba(123,92,245,0.1);border:1px solid rgba(123,92,245,0.2);border-radius:var(--radius-sm);padding:10px 12px;font-size:11px;color:var(--accent2);cursor:pointer;transition:all var(--transition)}
+.api-badge:hover{background:rgba(123,92,245,0.15)}
+.api-badge .api-label{font-weight:600;margin-bottom:2px}
+.api-badge .api-status{color:var(--text-muted);font-size:10px}
+
+/* ── MAIN ── */
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+
+/* ── DESKTOP HEADER ── */
+.header{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;position:sticky;top:0;background:rgba(10,10,15,0.88);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:50}
+.search-box{flex:1;max-width:440px;position:relative}
+.search-box input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px 10px 36px;color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:all var(--transition)}
+.search-box input:focus{border-color:rgba(200,241,53,0.3);background:var(--surface2)}
+.search-box input::placeholder{color:var(--text-dim)}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-dim);font-size:14px;pointer-events:none}
+.header-actions{display:flex;gap:8px;margin-left:auto}
+.btn{padding:9px 16px;border-radius:var(--radius-sm);font-size:13px;font-family:inherit;cursor:pointer;border:none;transition:all var(--transition);font-weight:500;white-space:nowrap}
+.btn-ghost{background:transparent;color:var(--text-muted);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--surface2);color:var(--text)}
+.btn-accent{background:var(--accent);color:#0a0a0f;font-weight:700}
+.btn-accent:hover{background:#d4f54a}
+.btn-accent:active,.btn-ghost:active{transform:scale(0.97)}
+.btn-sm{padding:6px 12px;font-size:12px}
+
+/* ── MOBILE HEADER ── */
+.mobile-header{display:none;padding:10px 14px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(10,10,15,0.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:50;gap:10px;align-items:center}
+.mobile-logo{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;flex-shrink:0}
+.mobile-logo span{color:var(--accent)}
+.mobile-header .search-box{flex:1;max-width:none}
+.mobile-header .search-box input{padding:9px 12px 9px 34px;font-size:14px}
+.mobile-add-btn{width:40px;height:40px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-muted);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* ── PAGES ── */
+.page{display:none;padding:22px 26px 48px}
+.page.active{display:block}
+.section-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.section-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;letter-spacing:-0.3px}
+.section-count{font-size:12px;color:var(--text-muted);background:var(--surface2);padding:2px 8px;border-radius:20px}
+.section-actions{margin-left:auto;display:flex;gap:6px}
+
+/* ── FILTER ROW ── */
+.filter-row{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;margin-bottom:18px;padding-bottom:2px;scrollbar-width:none;-ms-overflow-style:none}
+.filter-row::-webkit-scrollbar{display:none}
+.filter-tag{padding:7px 14px;border-radius:20px;font-size:12.5px;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);cursor:pointer;transition:all var(--transition);user-select:none;white-space:nowrap;flex-shrink:0}
+.filter-tag:hover{border-color:rgba(200,241,53,0.3);color:var(--text)}
+.filter-tag.active{background:rgba(200,241,53,0.1);border-color:rgba(200,241,53,0.4);color:var(--accent)}
+
+/* ── MASONRY ── */
+.masonry-grid{columns:3;column-gap:14px}
+
+/* ── SKELETON ── */
+.skeleton-card{break-inside:avoid;margin-bottom:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.skel{background:linear-gradient(90deg,var(--surface2) 25%,rgba(255,255,255,0.04) 50%,var(--surface2) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:4px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skel-preview{width:100%;height:148px}
+.skel-body{padding:13px}
+.skel-title{height:14px;margin-bottom:8px;border-radius:4px;width:70%}
+.skel-line{height:10px;margin-bottom:5px;border-radius:4px}
+.skel-line.short{width:50%}
+.skel-tags{display:flex;gap:4px;margin:10px 0}
+.skel-tag{height:18px;width:44px;border-radius:20px}
+.skel-btn{height:44px;border-radius:var(--radius-sm);margin-top:10px}
+
+/* ── CARDS ── */
+.prompt-card{break-inside:avoid;margin-bottom:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:border-color var(--transition),box-shadow var(--transition),transform var(--transition)}
+.prompt-card:hover{border-color:rgba(200,241,53,0.25);transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,0.4)}
+.prompt-card:active{transform:scale(0.98)}
+.preview-ph{width:100%;height:148px;display:flex;align-items:center;justify-content:center;font-size:36px;position:relative;overflow:hidden}
+.preview-ph .grad{position:absolute;inset:0;opacity:0.55}
+.card-body{padding:13px}
+.card-title{font-size:13.5px;font-weight:600;margin-bottom:5px;line-height:1.4}
+.card-prompt{font-size:11.5px;color:var(--text-muted);line-height:1.6;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+.card-tag{font-size:10.5px;padding:2px 8px;border-radius:20px;background:var(--surface2);color:var(--text-muted)}
+.card-tag.ratio{background:rgba(245,166,35,0.15);color:var(--accent3)}
+.card-actions{display:flex;gap:6px;align-items:center}
+.card-btn-copy{flex:1;padding:11px 10px;background:rgba(200,241,53,0.1);color:var(--accent);border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;transition:background var(--transition);min-height:44px}
+.card-btn-copy:hover{background:rgba(200,241,53,0.2)}
+.card-btn-copy:active{background:rgba(200,241,53,0.3)}
+.card-btn-icon{width:44px;height:44px;background:var(--surface2);border:none;border-radius:var(--radius-sm);color:var(--text-muted);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--transition);flex-shrink:0}
+.card-btn-icon:hover{color:var(--text)}
+.card-btn-icon.liked{color:#f15f79;background:rgba(241,95,121,0.1)}
+.card-btn-icon:active{transform:scale(0.9)}
+
+/* ── TABBAR ── */
+.tabbar{display:none;position:fixed;bottom:0;left:0;right:0;height:calc(var(--tabbar-h) + var(--safe-b));background:rgba(17,17,24,0.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--border);z-index:100;padding-bottom:var(--safe-b)}
+.tabbar-inner{height:var(--tabbar-h);display:flex;align-items:stretch}
+.tab-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--text-dim);transition:color var(--transition);position:relative;padding:8px 0}
+.tab-item.active{color:var(--accent)}
+.tab-icon{font-size:20px;line-height:1}
+.tab-label{font-size:10px;font-weight:500}
+.tab-badge{position:absolute;top:6px;right:calc(50% - 18px);background:var(--accent);color:#0a0a0f;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+
+/* ── LAB ── */
+.lab-layout{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start}
+.builder-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.builder-panel h3{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:18px}
+.builder-group{margin-bottom:18px}
+.builder-label{font-size:10.5px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px}
+.builder-chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:8px 13px;border-radius:20px;font-size:12.5px;border:1px solid var(--border);background:var(--surface2);color:var(--text-muted);cursor:pointer;transition:all var(--transition);user-select:none;min-height:38px;display:flex;align-items:center}
+.chip:hover{border-color:rgba(200,241,53,0.3);color:var(--text)}
+.chip.selected{background:rgba(200,241,53,0.1);border-color:var(--accent);color:var(--accent)}
+.chip:active{transform:scale(0.94)}
+.weight-row{display:flex;align-items:center;gap:8px;background:var(--surface2);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:6px}
+.weight-label{font-size:12px;flex:1}
+.weight-val{font-size:11px;color:var(--accent);font-family:'Syne',monospace;font-weight:700;width:30px;text-align:right}
+input[type="range"]{-webkit-appearance:none;width:90px;height:3px;background:var(--border);border-radius:2px;outline:none}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:var(--accent);border-radius:50%;cursor:pointer}
+.preview-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:sticky;top:76px}
+.preview-box h3{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
+.prompt-output{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:13px;font-size:12px;line-height:1.7;color:var(--text);min-height:90px;word-break:break-word;font-family:'Courier New',monospace;margin-bottom:6px}
+.neg-output{background:rgba(241,95,121,0.05);border:1px solid rgba(241,95,121,0.15);border-radius:var(--radius-sm);padding:10px;font-family:'Courier New',monospace;font-size:11px;color:#f15f79;margin-bottom:10px;word-break:break-all;display:none}
+.neg-section{background:rgba(241,95,121,0.05);border:1px solid rgba(241,95,121,0.15);border-radius:var(--radius-sm);padding:12px;margin-top:4px}
+.neg-title{font-size:10.5px;color:#f15f79;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.neg-chips{display:flex;gap:4px;flex-wrap:wrap}
+.neg-chip{font-size:11px;padding:5px 9px;background:rgba(241,95,121,0.1);border:1px solid rgba(241,95,121,0.2);border-radius:20px;color:#f15f79;cursor:pointer;transition:all var(--transition);min-height:30px;display:flex;align-items:center}
+.neg-chip:hover{background:rgba(241,95,121,0.2)}
+.neg-chip.added{opacity:.45;text-decoration:line-through}
+.ratio-switcher{display:flex;gap:6px}
+.ratio-btn{flex:1;padding:8px 4px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-muted);font-size:11px;cursor:pointer;text-align:center;transition:all var(--transition);line-height:1.4;min-height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ratio-btn:hover{border-color:rgba(200,241,53,0.3)}
+.ratio-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(200,241,53,0.05)}
+.lang-toggle{display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:10px}
+.lang-btn{flex:1;padding:7px;font-size:11.5px;text-align:center;cursor:pointer;transition:all var(--transition);color:var(--text-muted)}
+.lang-btn.active{background:rgba(200,241,53,0.1);color:var(--accent)}
+
+/* Copy action row under preview */
+.copy-action-row{display:flex;gap:6px;margin-bottom:8px}
+.copy-action-row .btn{flex:1;min-height:44px;font-size:12px}
+
+/* ── AI EXPAND ── */
+.ai-expand{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px}
+.ai-input-row{display:flex;gap:8px}
+.ai-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:all var(--transition);min-height:44px;width:100%}
+.ai-input:focus{border-color:rgba(200,241,53,0.3)}
+.ai-input::placeholder{color:var(--text-dim)}
+textarea.ai-input{resize:vertical;min-height:80px}
+.ai-loading{display:none;align-items:center;gap:8px;font-size:12px;color:var(--text-muted);margin-top:10px}
+.ai-loading.visible{display:flex}
+.dot-pulse{display:flex;gap:3px}
+.dot-pulse span{width:5px;height:5px;background:var(--accent);border-radius:50%;animation:pulse 1.2s ease-in-out infinite}
+.dot-pulse span:nth-child(2){animation-delay:.2s}
+.dot-pulse span:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,80%,100%{transform:scale(0.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+
+/* AI result area with skeleton */
+.ai-skeleton{display:none;margin-top:12px}
+.ai-skeleton.visible{display:block}
+.ai-skel-line{height:12px;border-radius:4px;margin-bottom:6px}
+.ai-skel-line.w80{width:80%}
+.ai-skel-line.w60{width:60%}
+.ai-skel-line.w90{width:90%}
+
+/* Error styles */
+.api-error{color:#f15f79;font-size:12px;padding:10px 12px;background:rgba(241,95,121,0.07);border:1px solid rgba(241,95,121,0.15);border-radius:var(--radius-sm);margin-top:10px;display:flex;align-items:flex-start;gap:8px;line-height:1.5}
+.api-error-icon{flex-shrink:0;font-size:14px}
+
+/* ── PROFILE ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px}
+.stat-num{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--accent)}
+.stat-label{font-size:11px;color:var(--text-muted);margin-top:2px}
+
+/* ── DATA MANAGEMENT BAR ── */
+.data-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.data-bar-label{font-size:12px;color:var(--text-muted);flex:1;min-width:120px}
+.data-bar-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ── IMPORT / EXPORT ── */
+#import-file-input{display:none}
+.import-drop{border:2px dashed var(--border);border-radius:var(--radius-sm);padding:28px;text-align:center;cursor:pointer;transition:all var(--transition);margin-top:12px}
+.import-drop:hover,.import-drop.dragover{border-color:rgba(200,241,53,0.4);background:rgba(200,241,53,0.03)}
+.import-drop p{font-size:13px;color:var(--text-muted);margin-top:8px}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.72);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);z-index:200;display:none;align-items:flex-end;justify-content:center;padding:0}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:20px 20px 0 0;width:100%;max-height:88vh;overflow-y:auto;padding:8px 20px calc(20px + var(--safe-b));animation:slideUp .28s cubic-bezier(0.32,0.72,0,1)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal::before{content:'';display:block;width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700}
+.modal-close{width:32px;height:32px;background:var(--surface2);border:none;border-radius:6px;cursor:pointer;color:var(--text-muted);font-size:14px;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{color:var(--text)}
+.modal-prompt-full{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;font-size:13px;line-height:1.8;color:var(--text);font-family:'Courier New',monospace;margin-bottom:10px;word-break:break-all;max-height:160px;overflow-y:auto}
+.modal-neg-box{background:rgba(241,95,121,0.05);border:1px solid rgba(241,95,121,0.2);border-radius:var(--radius-sm);padding:12px;font-family:'Courier New',monospace;font-size:11.5px;color:#f15f79;margin-bottom:10px;display:none}
+.modal-meta{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.meta-pill{font-size:11px;padding:4px 10px;border-radius:20px;background:var(--surface2);color:var(--text-muted)}
+.history-section{margin-top:18px;border-top:1px solid var(--border);padding-top:18px}
+.history-item{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px}
+.history-ver{font-family:'Syne',monospace;font-size:10px;color:var(--accent);background:rgba(200,241,53,0.08);padding:2px 7px;border-radius:4px;white-space:nowrap}
+.history-text{color:var(--text-muted);line-height:1.6}
+
+/* Detail copy buttons row */
+.detail-copy-row{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.detail-copy-row .btn{flex:1;min-height:48px;font-size:12.5px;min-width:100px}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:calc(var(--tabbar-h) + var(--safe-b) + 12px);left:50%;transform:translateX(-50%) translateY(12px);background:var(--accent);color:#0a0a0f;padding:10px 20px;border-radius:var(--radius-sm);font-size:13px;font-weight:700;z-index:300;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.error{background:#f15f79}
+
+/* ── EMPTY ── */
+.empty-state{text-align:center;padding:64px 20px;color:var(--text-dim)}
+.empty-state .empty-icon{font-size:38px;margin-bottom:14px}
+.empty-state p{font-size:13.5px;line-height:1.8}
+
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--text-dim);border-radius:10px}
+
+/* ── BREAKPOINTS ── */
+@media(max-width:1200px){.masonry-grid{columns:2}.stats-row{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:640px){
+  .modal-overlay{align-items:center;padding:24px}
+  .modal{border-radius:20px;max-width:580px;padding:28px;animation:modalIn .22s cubic-bezier(0.34,1.56,0.64,1)}
+  .modal::before{display:none}
+  @keyframes modalIn{from{opacity:0;transform:scale(0.95) translateY(10px)}to{opacity:1;transform:none}}
+  .toast{bottom:24px}
+}
+@media(max-width:767px){
+  .sidebar{display:none}
+  .main{margin-left:0}
+  .header{display:none}
+  .mobile-header{display:flex}
+  .tabbar{display:block}
+  .page{padding:14px 14px calc(var(--tabbar-h) + var(--safe-b) + 20px)}
+  .masonry-grid{columns:1}
+  .section-title{font-size:18px}
+  .lab-layout{grid-template-columns:1fr}
+  .preview-box{position:static}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .filter-tag{padding:8px 14px;font-size:13px}
+  .data-bar{flex-direction:column;align-items:flex-start}
+  .section-actions{margin-left:0;width:100%}
+}
+@media(max-width:375px){.page{padding-left:12px;padding-right:12px}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-mark">🪄 Prompt<span>Vault</span></div>
+    <div class="logo-sub">AI Prompt Library</div>
+  </div>
+  <div class="nav-section">瀏覽</div>
+  <div class="nav-item active" data-page="explore"><span class="icon">✦</span> 探索 Explore <span class="badge" id="sb-explore-badge">12</span></div>
+  <div class="nav-item" data-page="categories"><span class="icon">⊞</span> 分類 Categories</div>
+  <div class="nav-section">工具</div>
+  <div class="nav-item" data-page="lab"><span class="icon">⚗</span> 創作工坊 Lab</div>
+  <div class="nav-section">個人</div>
+  <div class="nav-item" data-page="favorites"><span class="icon">♥</span> 我的收藏 <span class="badge" id="sb-fav-badge">0</span></div>
+  <div class="nav-item" data-page="profile"><span class="icon">◎</span> 個人檔案</div>
+  <div class="sidebar-footer">
+    <div class="api-badge" id="api-config-btn">
+      <div class="api-label">🤖 Claude API</div>
+      <div class="api-status" id="api-status-text">點擊設定 API 金鑰</div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <!-- Desktop header -->
+  <header class="header">
+    <div class="search-box">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="search-desktop" placeholder="搜尋提示語、風格、主題…">
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost" onclick="openAddModal()">＋ 新增</button>
+      <button class="btn btn-accent" onclick="navigateTo('lab')">⚗ 開始創作</button>
+    </div>
+  </header>
+
+  <!-- Mobile header -->
+  <header class="mobile-header">
+    <div class="mobile-logo">Prompt<span>Vault</span></div>
+    <div class="search-box">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="search-mobile" placeholder="搜尋…">
+    </div>
+    <button class="mobile-add-btn" onclick="openAddModal()">＋</button>
+  </header>
+
+  <!-- EXPLORE -->
+  <div class="page active" id="page-explore">
+    <div class="section-header">
+      <div class="section-title">探索提示語</div>
+      <div class="section-count" id="explore-count">64 個</div>
+      <div class="section-actions">
+        <button class="btn btn-ghost btn-sm" onclick="exportJSON()">⬇ 匯出</button>
+        <button class="btn btn-ghost btn-sm" onclick="openModal('modal-import')">⬆ 匯入</button>
+      </div>
+    </div>
+    <div class="filter-row" id="filter-row">
+      <div class="filter-tag active" data-filter="all">全部</div>
+      <div class="filter-tag" data-filter="social">社群媒體</div>
+      <div class="filter-tag" data-filter="product">商品攝影</div>
+      <div class="filter-tag" data-filter="poster">活動海報</div>
+      <div class="filter-tag" data-filter="logo">Logo</div>
+      <div class="filter-tag" data-filter="portrait">人像</div>
+      <div class="filter-tag" data-filter="landscape">風景</div>
+      <div class="filter-tag" data-filter="1:1">1:1</div>
+      <div class="filter-tag" data-filter="16:9">16:9</div>
+      <div class="filter-tag" data-filter="9:16">9:16</div>
+        <div class="filter-tag" data-filter="uiux">UI/UX</div>
+        <div class="filter-tag" data-filter="illustration">插畫</div>
+        <div class="filter-tag" data-filter="architecture">建築</div>
+        <div class="filter-tag" data-filter="macro">微距攝影</div>
+        <div class="filter-tag" data-filter="personal">🌟 個人風格</div>
+    </div>
+    <div class="masonry-grid" id="prompt-grid"></div>
+  </div>
+
+  <!-- CATEGORIES -->
+  <div class="page" id="page-categories">
+    <div class="section-header"><div class="section-title">分類瀏覽</div></div>
+    <div id="categories-content"></div>
+  </div>
+
+  <!-- LAB -->
+  <div class="page" id="page-lab">
+    <div class="section-header"><div class="section-title">⚗ 創作工坊</div></div>
+    <div class="ai-expand">
+      <div class="builder-label" style="margin-bottom:10px">🤖 AI 提示語擴寫</div>
+      <div class="ai-input-row">
+        <input class="ai-input" id="ai-input" placeholder="輸入關鍵字，例如：貓、太空、科技感…">
+        <button class="btn btn-accent" id="ai-btn" onclick="aiExpand()">✦ 擴寫</button>
+      </div>
+      <div class="ai-loading" id="ai-loading"><div class="dot-pulse"><span></span><span></span><span></span></div>Claude 正在生成…</div>
+      <!-- Skeleton while loading -->
+      <div class="ai-skeleton" id="ai-skeleton">
+        <div style="height:12px;margin-top:14px;margin-bottom:4px;font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase">預覽</div>
+        <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:13px">
+          <div class="skel ai-skel-line w90"></div>
+          <div class="skel ai-skel-line w80"></div>
+          <div class="skel ai-skel-line w60"></div>
+        </div>
+      </div>
+      <div id="ai-result"></div>
+    </div>
+    <div class="lab-layout">
+      <div class="builder-panel">
+        <h3>🔧 模組化組合器</h3>
+        <div class="builder-group"><div class="builder-label">主體 Subject</div><div class="builder-chips" id="chips-subject"></div></div>
+        <div class="builder-group"><div class="builder-label">風格 Style</div><div class="builder-chips" id="chips-style"></div></div>
+        <div class="builder-group"><div class="builder-label">燈光 Lighting</div><div class="builder-chips" id="chips-lighting"></div></div>
+        <div class="builder-group"><div class="builder-label">鏡頭 Camera</div><div class="builder-chips" id="chips-camera"></div></div>
+        <div class="builder-group"><div class="builder-label">渲染 Render</div><div class="builder-chips" id="chips-render"></div></div>
+        <div class="builder-group">
+          <div class="builder-label">比例 Aspect Ratio</div>
+          <div class="ratio-switcher" id="ratio-switcher">
+            <div class="ratio-btn active" data-ratio="--ar 1:1">1:1<br><small>IG</small></div>
+            <div class="ratio-btn" data-ratio="--ar 16:9">16:9<br><small>YT</small></div>
+            <div class="ratio-btn" data-ratio="--ar 9:16">9:16<br><small>限動</small></div>
+            <div class="ratio-btn" data-ratio="--ar 4:3">4:3</div>
+          </div>
+        </div>
+        <div class="builder-group"><div class="builder-label">關鍵字權重</div><div id="weight-rows"></div></div>
+        <div class="neg-section"><div class="neg-title">⊖ 負向提示語</div><div class="neg-chips" id="neg-chips"></div></div>
+      </div>
+      <div class="preview-box">
+        <h3>輸出預覽</h3>
+        <div class="lang-toggle">
+          <div class="lang-btn active" data-lang="en">English</div>
+          <div class="lang-btn" data-lang="zh">中文</div>
+        </div>
+        <div class="builder-label" style="margin-bottom:4px">正向提示</div>
+        <div class="prompt-output" id="prompt-preview"><span style="color:var(--text-dim)">請選取左方選項…</span></div>
+        <div class="builder-label" style="margin-bottom:4px;color:#f15f79">負向提示</div>
+        <div class="neg-output" id="neg-preview"></div>
+        <!-- Separate copy buttons for positive / negative -->
+        <div class="copy-action-row">
+          <button class="btn btn-accent" onclick="copyBuiltPrompt('pos')">📋 複製正向</button>
+          <button class="btn btn-ghost" id="copy-neg-btn" onclick="copyBuiltPrompt('neg')" style="opacity:.4;cursor:default" disabled>⊖ 複製負向</button>
+        </div>
+        <button class="btn btn-ghost" style="width:100%;min-height:40px;font-size:12px" onclick="saveBuiltPrompt()">💾 儲存到資料庫</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAVORITES -->
+  <div class="page" id="page-favorites">
+    <div class="section-header">
+      <div class="section-title">♥ 我的收藏</div>
+      <div class="section-count" id="fav-count-display">0 個</div>
+    </div>
+    <div class="masonry-grid" id="favorites-grid"></div>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="page" id="page-profile">
+    <div class="section-header"><div class="section-title">◎ 個人檔案</div></div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num" id="stat-saved">0</div><div class="stat-label">已收藏</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-copied">0</div><div class="stat-label">累計複製</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-built">0</div><div class="stat-label">工坊建立</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-total">64</div><div class="stat-label">資料庫總量</div></div>
+    </div>
+    <!-- Data management -->
+    <div class="data-bar">
+      <div class="data-bar-label">🗄 資料管理 · localStorage 備份</div>
+      <div class="data-bar-actions">
+        <button class="btn btn-ghost btn-sm" onclick="exportJSON()">⬇ 匯出 JSON</button>
+        <button class="btn btn-ghost btn-sm" onclick="openModal('modal-import')">⬆ 匯入 JSON</button>
+        <button class="btn btn-ghost btn-sm" style="color:#f15f79;border-color:rgba(241,95,121,0.3)" onclick="confirmClearCustom()">🗑 清除自建</button>
+      </div>
+    </div>
+    <div class="masonry-grid" id="history-grid"></div>
+  </div>
+</main>
+
+<!-- TABBAR -->
+<nav class="tabbar">
+  <div class="tabbar-inner">
+    <div class="tab-item active" data-page="explore"><div class="tab-icon">✦</div><div class="tab-label">探索</div></div>
+    <div class="tab-item" data-page="categories"><div class="tab-icon">⊞</div><div class="tab-label">分類</div></div>
+    <div class="tab-item" data-page="lab"><div class="tab-icon">⚗</div><div class="tab-label">工坊</div></div>
+    <div class="tab-item" data-page="favorites">
+      <div class="tab-icon">♥</div><div class="tab-label">收藏</div>
+      <div class="tab-badge" id="tab-fav-badge" style="display:none">0</div>
+    </div>
+    <div class="tab-item" data-page="profile"><div class="tab-icon">◎</div><div class="tab-label">我的</div></div>
+  </div>
+</nav>
+</div>
+
+<!-- MODAL: Detail -->
+<div class="modal-overlay" id="modal-detail">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">提示語詳情</div>
+      <button class="modal-close" onclick="closeModal('modal-detail')">✕</button>
+    </div>
+    <div class="modal-meta" id="modal-meta"></div>
+    <div class="builder-label" style="margin-bottom:4px">正向提示語</div>
+    <div class="modal-prompt-full" id="modal-prompt-full"></div>
+    <div id="modal-neg-label" style="display:none;font-size:10.5px;color:#f15f79;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">負向提示語</div>
+    <div class="modal-neg-box" id="modal-neg"></div>
+    <!-- Separate copy: positive / negative / all -->
+    <div class="detail-copy-row">
+      <button class="btn btn-accent" onclick="copyModalPrompt('pos')">📋 複製正向</button>
+      <button class="btn btn-ghost" id="modal-copy-neg-btn" onclick="copyModalPrompt('neg')">⊖ 複製負向</button>
+      <button class="btn btn-ghost" id="modal-fav-btn" onclick="toggleFavFromModal()">♥ 收藏</button>
+    </div>
+    <div class="history-section" id="modal-history" style="display:none"></div>
+  </div>
+</div>
+
+<!-- MODAL: API -->
+<div class="modal-overlay" id="modal-api">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">🔑 設定 Claude API</div>
+      <button class="modal-close" onclick="closeModal('modal-api')">✕</button>
+    </div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;line-height:1.7">輸入 Anthropic API 金鑰以啟用 AI 擴寫功能。金鑰只存在本地 localStorage，不會傳送至任何伺服器。</p>
+    <input class="ai-input" id="api-key-input" type="password" placeholder="sk-ant-…" style="margin-bottom:8px">
+    <!-- Masked display of current key -->
+    <div id="current-key-display" style="display:none;font-size:11px;color:var(--text-muted);margin-bottom:12px;font-family:'Courier New',monospace;padding:6px 10px;background:var(--surface2);border-radius:6px"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-accent" style="flex:1;min-height:48px" onclick="saveApiKey()">儲存金鑰</button>
+      <button class="btn btn-ghost" style="min-height:48px;color:#f15f79;border-color:rgba(241,95,121,0.3)" id="clear-key-btn" onclick="clearApiKey()" style="display:none">清除</button>
+      <button class="btn btn-ghost" style="min-height:48px" onclick="closeModal('modal-api')">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Add -->
+<div class="modal-overlay" id="modal-add">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">＋ 新增提示語</div>
+      <button class="modal-close" onclick="closeModal('modal-add')">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <input class="ai-input" id="add-title" placeholder="名稱（例如：奶油色商品攝影）">
+      <textarea class="ai-input" id="add-prompt" rows="4" placeholder="正向提示語（英文）…"></textarea>
+      <textarea class="ai-input" id="add-neg" rows="2" placeholder="負向提示語（選填，例如：blurry, low quality）…"></textarea>
+      <input class="ai-input" id="add-category" placeholder="分類：social / product / poster / logo / portrait / landscape">
+      <input class="ai-input" id="add-tags" placeholder="標籤（逗號分隔，例如：極簡, 1:1）">
+      <button class="btn btn-accent" style="min-height:48px" onclick="saveNewPrompt()">✦ 新增到資料庫</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Import -->
+<div class="modal-overlay" id="modal-import">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">⬆ 匯入 JSON</div>
+      <button class="modal-close" onclick="closeModal('modal-import')">✕</button>
+    </div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:4px;line-height:1.7">支援之前匯出的 PromptVault JSON 檔案。匯入的提示語將<strong style="color:var(--text)">合併</strong>到現有資料庫（不會刪除現有資料）。</p>
+    <div class="import-drop" id="import-drop" onclick="document.getElementById('import-file-input').click()">
+      <div style="font-size:28px">📂</div>
+      <p>點擊選取 JSON 檔案<br><span style="font-size:11px">或拖拉到此區域</span></p>
+    </div>
+    <input type="file" id="import-file-input" accept=".json">
+    <div id="import-status" style="margin-top:10px;font-size:12px;color:var(--text-muted)"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────
+var BASE = [
+  {id:1,title:"奶油色極簡商品攝影",category:"product",ratio:"1:1",
+   prompt:"A minimalist product shot of a white ceramic mug on a cream linen surface, soft natural window light from the left, shallow depth of field, muted beige tones, clean background, professional food styling, 8K photography, shot with Sony A7R IV",
+   neg:"ugly, deformed, blurry, low quality, watermark, text",
+   tags:["極簡","商品","奶油色","自然光"],gradient:"linear-gradient(135deg,#f5e6d3,#e8d5b7)",emoji:"☕",
+   versions:[{ver:"v1",change:"移除 studio light 改用 window light"},{ver:"v2",change:"新增 cream linen surface"}]},
+  {id:2,title:"Cyberpunk 城市霓虹夜景",category:"landscape",ratio:"16:9",
+   prompt:"Cinematic wide-angle shot of a cyberpunk city at night, towering neon-lit skyscrapers, rain-soaked streets reflecting purple and cyan neon signs, atmospheric fog, volumetric light rays, dramatic composition, Blade Runner aesthetic, unreal engine 5 render, photorealistic",
+   neg:"daytime, bright colors, cartoon, anime",
+   tags:["Cyberpunk","夜景","霓虹","16:9"],gradient:"linear-gradient(135deg,#1a0533,#0d2a4a)",emoji:"🌆",
+   versions:[{ver:"v1",change:"加入 Blade Runner aesthetic"}]},
+  {id:3,title:"黑金奢華Logo設計",category:"logo",ratio:"1:1",
+   prompt:"Premium minimalist logo design, black and gold color palette, elegant serif typography, clean vector style, luxury brand identity, centered composition, pure white background, professional graphic design, high contrast",
+   neg:"gradient, shadow, 3D effect, cluttered",
+   tags:["Logo","黑金","奢華","極簡"],gradient:"linear-gradient(135deg,#1a1200,#3d2800)",emoji:"⭐",
+   versions:[{ver:"v1",change:"初版"},{ver:"v2",change:"強調 vector style"},{ver:"v3",change:"gradient 移至負向提示"}]},
+  {id:4,title:"IG 限動人像 - 日系清新",category:"portrait",ratio:"9:16",
+   prompt:"Portrait photography, young woman in a field of white flowers, soft golden hour backlight, film grain, warm pastel tones, shallow depth of field, Fujifilm Superia 400 film simulation, dreamy bokeh, natural pose, Japanese aesthetic",
+   neg:"harsh shadows, overexposed, skin retouching, artificial",
+   tags:["人像","日系","金時","9:16"],gradient:"linear-gradient(135deg,#fff3e0,#fce4ec)",emoji:"🌸",
+   versions:[{ver:"v1",change:"初版"}]},
+  {id:5,title:"3D 黏土風格插圖",category:"social",ratio:"1:1",
+   prompt:"3D clay art style illustration, cute character made of colorful clay, soft pastel colors, studio lighting from above, smooth surface texture, kawaii aesthetic, clean white background, Blender render, trending on Behance",
+   neg:"photo realistic, dark colors, scary",
+   tags:["3D","黏土","可愛","社群"],gradient:"linear-gradient(135deg,#e1f5fe,#f3e5f5)",emoji:"🎨",
+   versions:[{ver:"v1",change:"初版"},{ver:"v2",change:"新增 trending on Behance"}]},
+  {id:6,title:"電商 Banner - 科技產品",category:"product",ratio:"16:9",
+   prompt:"Product photography for e-commerce, sleek wireless earbuds floating in mid-air, dark background with soft blue gradient, dynamic studio lighting highlighting metallic surfaces, clean composition, advertising shot, 4K resolution, professional commercial photography",
+   neg:"cluttered background, amateur, low resolution",
+   tags:["電商","科技","產品","16:9"],gradient:"linear-gradient(135deg,#0d1117,#1a2744)",emoji:"🎧",
+   versions:[{ver:"v1",change:"初版"}]},
+  {id:7,title:"活動海報 - EDM 音樂節",category:"poster",ratio:"9:16",
+   prompt:"Event poster design for an EDM music festival, neon laser lights, dark atmospheric background, typography with glowing effects, dynamic energy, crowd silhouettes, purple magenta color scheme, professional graphic design, editorial layout",
+   neg:"daytime, pastel colors, low energy",
+   tags:["海報","EDM","霓虹","9:16"],gradient:"linear-gradient(135deg,#1a0028,#2d0a4e)",emoji:"🎵",
+   versions:[{ver:"v1",change:"初版"}]},
+  {id:8,title:"極簡北歐室內設計",category:"landscape",ratio:"4:3",
+   prompt:"Interior design photography, Scandinavian minimalist living room, white walls, warm wood tones, natural linen textiles, monstera plant, soft diffused daylight, clean lines, cozy hygge atmosphere, architectural photography, Canon 24mm lens",
+   neg:"dark, cluttered, colorful, maximalist",
+   tags:["室內","北歐","極簡","自然光"],gradient:"linear-gradient(135deg,#f5f0eb,#e8e0d8)",emoji:"🏠",
+   versions:[{ver:"v1",change:"初版"},{ver:"v2",change:"加入 hygge atmosphere"}]},
+  {id:9,title:"復古 Y2K 風格社群貼圖",category:"social",ratio:"1:1",
+   prompt:"Y2K aesthetic digital art, retro futuristic design, chrome metallic textures, bubblegum pink and electric blue color palette, pixel elements, holographic gradients, 2000s nostalgia, sticker design, clean vector illustration",
+   neg:"modern flat design, muted colors, minimalism",
+   tags:["Y2K","復古","社群","貼圖"],gradient:"linear-gradient(135deg,#ff9fd6,#9fd6ff)",emoji:"✨",
+   versions:[{ver:"v1",change:"初版"}]},
+  {id:10,title:"美食攝影 - 咖啡與可頌",category:"product",ratio:"1:1",
+   prompt:"Food photography, a golden croissant beside a latte art coffee cup, overhead flat lay composition, warm morning light, wooden table surface, light scattered crumbs, lifestyle photography, soft shadows, aperture f/2.8, film-inspired editing",
+   neg:"artificial light, messy, synthetic food",
+   tags:["美食","咖啡","flat lay","生活感"],gradient:"linear-gradient(135deg,#3d2010,#6b3a1f)",emoji:"🥐",
+   versions:[{ver:"v1",change:"初版"},{ver:"v2",change:"加入 film-inspired editing"}]},
+  {id:11,title:"水彩植物插畫",category:"social",ratio:"1:1",
+   prompt:"Delicate watercolor botanical illustration, eucalyptus branches with soft green leaves, gentle washes of sage green and warm beige, white paper texture, fine ink outlines, traditional illustration style, spring collection, elegant and airy composition",
+   neg:"digital art, CGI, dark colors, bold outlines",
+   tags:["水彩","植物","插畫","典雅"],gradient:"linear-gradient(135deg,#e8f5e9,#f5f5dc)",emoji:"🌿",
+   versions:[{ver:"v1",change:"初版"}]},
+  {id:12,title:"電影感人像 - 硬打光",category:"portrait",ratio:"9:16",
+   prompt:"Cinematic portrait, dramatic side lighting, deep shadows, high contrast black and white, film noir aesthetic, strong jawline, intense gaze, grain texture, 35mm film look, Kodak Tri-X 400, editorial photography",
+   neg:"soft light, colorful, happy expression, commercial",
+   tags:["人像","電影感","黑白","戲劇光"],gradient:"linear-gradient(135deg,#1a1a1a,#333333)",emoji:"🎬",
+   versions:[{ver:"v1",change:"初版"}]}
+];
+
+
+var EXTRA_PROMPTS = [
+  {
+    "id": 101,
+    "title": "iOS 極簡登入介面",
+    "category": "uiux",
+    "ratio": "9:16",
+    "prompt": "iOS mobile app login screen UI design, ultra clean minimalist interface, soft white and light gray palette, rounded corners, SF Pro typography, subtle drop shadows, glassmorphism card elements, dark mode toggle, smooth gradient background, Apple Human Interface Guidelines, Figma mockup render",
+    "neg": "cluttered, too many elements, outdated, skeuomorphic, low contrast, pixelated",
+    "tags": [
+      "UI設計",
+      "iOS",
+      "極簡",
+      "登入畫面",
+      "9:16"
+    ],
+    "gradient": "linear-gradient(135deg,#e8f4f8,#b8d4e8)",
+    "emoji": "📱",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以 Apple HIG 為基礎，強調留白與圓角設計語言"
+      }
+    ]
+  },
+  {
+    "id": 102,
+    "title": "深色模式儀表板",
+    "category": "uiux",
+    "ratio": "16:9",
+    "prompt": "Dark mode SaaS dashboard UI design, data visualization with glowing charts, neon accent colors on deep navy background, card-based layout, sidebar navigation, real-time analytics panels, clean sans-serif typography, subtle grid lines, modern fintech aesthetic, Figma design system, desktop web app mockup",
+    "neg": "light mode, cluttered, poor contrast, comic sans, gradients overuse",
+    "tags": [
+      "儀表板",
+      "深色模式",
+      "數據可視化",
+      "SaaS"
+    ],
+    "gradient": "linear-gradient(135deg,#0d1117,#1a2744)",
+    "emoji": "📊",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "深色背景搭配霓虹強調色，提升數據可讀性"
+      }
+    ]
+  },
+  {
+    "id": 103,
+    "title": "電商購物車頁面",
+    "category": "uiux",
+    "ratio": "9:16",
+    "prompt": "E-commerce mobile shopping cart UI, clean product list with thumbnail images, price breakdown section, apply coupon input field, sticky checkout button, warm white background, coral accent color for CTA buttons, minimal icon system, smooth micro-animation implied, Material Design 3 inspired, high-fidelity prototype",
+    "neg": "cluttered layout, bad typography, low contrast buttons, confusing hierarchy",
+    "tags": [
+      "電商",
+      "購物車",
+      "手機UI",
+      "Material Design"
+    ],
+    "gradient": "linear-gradient(135deg,#fff5f5,#ffe0d4)",
+    "emoji": "🛒",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "參考 Material Design 3，強調清晰的價格層級與明確的 CTA"
+      }
+    ]
+  },
+  {
+    "id": 104,
+    "title": "音樂播放器介面",
+    "category": "uiux",
+    "ratio": "1:1",
+    "prompt": "Music streaming app player screen, full-bleed album artwork background with blur overlay, frosted glass playback controls, animated equalizer bars, soft gradient overlay, smooth progress slider, mini lyrics display, iOS style dynamic island integration, premium dark aesthetic, Spotify-inspired UI but unique, high fidelity mockup",
+    "neg": "flat boring design, no depth, poor readability, outdated player design",
+    "tags": [
+      "音樂播放器",
+      "玻璃擬態",
+      "UI設計",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#1a0533,#2d1a4a)",
+    "emoji": "🎵",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以全幅專輯封面為背景，毛玻璃控制列提升沉浸感"
+      }
+    ]
+  },
+  {
+    "id": 105,
+    "title": "健身追蹤 App 首頁",
+    "category": "uiux",
+    "ratio": "9:16",
+    "prompt": "Fitness tracking mobile app home screen, workout progress rings similar to Apple Watch activity rings, daily calorie counter, scheduled workout cards, profile avatar, clean white and electric green color scheme, bold sans-serif numbers, motivational progress indicators, smooth rounded UI components, health app aesthetic",
+    "neg": "dull colors, poor data visualization, cluttered interface",
+    "tags": [
+      "健身",
+      "追蹤App",
+      "UI設計",
+      "進度圓環"
+    ],
+    "gradient": "linear-gradient(135deg,#e8ffe0,#c8f135)",
+    "emoji": "💪",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "仿 Apple 活動環設計語言，強調每日目標進度"
+      }
+    ]
+  },
+  {
+    "id": 106,
+    "title": "旅遊訂房探索頁面",
+    "category": "uiux",
+    "ratio": "16:9",
+    "prompt": "Travel booking app exploration page UI, full-bleed hero destination photography, floating search bar with location and date pickers, horizontal scroll of destination cards, filter chips row, map view toggle, warm earth tone accents, Airbnb-inspired card design, clean typography hierarchy, desktop responsive layout mockup",
+    "neg": "outdated booking interface, low quality card design, cluttered filters",
+    "tags": [
+      "旅遊",
+      "訂房",
+      "探索頁",
+      "UI設計",
+      "16:9"
+    ],
+    "gradient": "linear-gradient(135deg,#fff8e8,#f5e6c8)",
+    "emoji": "✈️",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以大圖視覺為主，強調目的地的情感吸引力"
+      }
+    ]
+  },
+  {
+    "id": 107,
+    "title": "醫療預約系統介面",
+    "category": "uiux",
+    "ratio": "16:9",
+    "prompt": "Medical appointment booking web interface, clean clinical white design, soft blue accent colors, doctor profile cards with availability calendar, time slot selection grid, patient information form, accessible design with high contrast text, trust-building professional aesthetic, healthcare UX best practices, desktop web mockup, WCAG AA compliant",
+    "neg": "scary medical imagery, poor accessibility, cluttered form, anxiety-inducing design",
+    "tags": [
+      "醫療",
+      "預約系統",
+      "無障礙設計",
+      "UI設計"
+    ],
+    "gradient": "linear-gradient(135deg,#e8f4fe,#b8d8f8)",
+    "emoji": "🏥",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以信任感與清晰度為核心，符合 WCAG AA 無障礙標準"
+      }
+    ]
+  },
+  {
+    "id": 108,
+    "title": "金融投資組合App",
+    "category": "uiux",
+    "ratio": "9:16",
+    "prompt": "Personal finance investment portfolio mobile app, stock chart with candlestick patterns, portfolio allocation donut chart, gain-loss indicators in green and red, dark premium aesthetic with gold accents, clean data tables, pull-to-refresh implied, Bloomberg terminal inspired but mobile-friendly, professional fintech UI design",
+    "neg": "cluttered charts, poor readability, confusing data presentation, amateur design",
+    "tags": [
+      "金融",
+      "投資組合",
+      "手機App",
+      "深色UI"
+    ],
+    "gradient": "linear-gradient(135deg,#1a1200,#2d2200)",
+    "emoji": "💹",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "深色底搭配金色點綴，強調高端金融工具感"
+      }
+    ]
+  },
+  {
+    "id": 109,
+    "title": "社群媒體個人頁面",
+    "category": "uiux",
+    "ratio": "9:16",
+    "prompt": "Social media creator profile page mobile UI, grid post layout, story highlights circles, follower stats cards, bio section with gradient text, pinned posts indicator, verified badge design, smooth transition animations implied, soft pastel and white palette, Instagram-inspired but more editorial feel, high-fidelity mobile mockup",
+    "neg": "cluttered grid, poor photo arrangement, ugly badge design, low quality typography",
+    "tags": [
+      "社群媒體",
+      "個人頁面",
+      "創作者",
+      "手機UI"
+    ],
+    "gradient": "linear-gradient(135deg,#fce4f8,#e8d4f8)",
+    "emoji": "👤",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以 Instagram 為參考，加入更強的排版個性"
+      }
+    ]
+  },
+  {
+    "id": 110,
+    "title": "AI 聊天機器人介面",
+    "category": "uiux",
+    "ratio": "16:9",
+    "prompt": "AI chatbot conversation interface, clean chat bubbles with distinct user and AI styling, typing indicator animation, suggested response chips, conversation history sidebar, model selection dropdown, token usage indicator, dark and light mode split preview, subtle gradient backgrounds for AI messages, modern GPT-style UI but with unique visual identity",
+    "neg": "old-fashioned chat UI, poor bubble design, confusing navigation, no visual hierarchy",
+    "tags": [
+      "AI聊天",
+      "對話介面",
+      "聊天機器人",
+      "UI設計"
+    ],
+    "gradient": "linear-gradient(135deg,#f0e8ff,#d4c8f8)",
+    "emoji": "🤖",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "區分使用者與 AI 對話泡泡的視覺語言，提升可讀性"
+      }
+    ]
+  },
+  {
+    "id": 111,
+    "title": "夢幻森林精靈插畫",
+    "category": "illustration",
+    "ratio": "1:1",
+    "prompt": "Enchanted forest fairy illustration, delicate ethereal fairy with translucent wings, surrounded by glowing fireflies and magical mushrooms, soft watercolor and digital art fusion, warm amber and sage green palette, painterly brush strokes, dreamy bokeh light particles, Studio Ghibli aesthetic meets modern digital illustration, highly detailed character art",
+    "neg": "dark horror, overly realistic, adult content, muddy colors, poor anatomy",
+    "tags": [
+      "精靈",
+      "奇幻插畫",
+      "森林",
+      "Ghibli風"
+    ],
+    "gradient": "linear-gradient(135deg,#e8f5e0,#d4f0c0)",
+    "emoji": "🧚",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "融合水彩質感與 Ghibli 美學，強調溫暖奇幻氛圍"
+      }
+    ]
+  },
+  {
+    "id": 112,
+    "title": "蒸汽龐克城市插畫",
+    "category": "illustration",
+    "ratio": "16:9",
+    "prompt": "Steampunk cityscape wide illustration, Victorian-era mechanical city with giant brass gears and steam pipes, airships docking at sky harbors, warm sepia and copper tones, detailed architectural linework, atmospheric fog with god rays of light, intricate mechanical details, painterly digital oil painting style, panoramic city view, concept art quality",
+    "neg": "modern technology, clean minimalism, anime style, flat design",
+    "tags": [
+      "蒸汽龐克",
+      "城市插畫",
+      "概念藝術",
+      "16:9"
+    ],
+    "gradient": "linear-gradient(135deg,#3d2800,#6b4400)",
+    "emoji": "⚙️",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以維多利亞時代建築為基礎，加入蒸汽龐克機械細節"
+      }
+    ]
+  },
+  {
+    "id": 113,
+    "title": "復古日本旅遊海報",
+    "category": "illustration",
+    "ratio": "9:16",
+    "prompt": "Retro Japanese travel poster illustration, Mount Fuji at sunset with traditional torii gate in foreground, flat graphic design style inspired by 1930s travel posters, limited color palette of vermillion red, navy and cream, bold silhouettes, simple geometric shapes, Japanese woodblock print texture, vintage letterpress feel",
+    "neg": "photorealistic, too many colors, modern style, cluttered composition",
+    "tags": [
+      "日本",
+      "復古海報",
+      "插畫",
+      "富士山",
+      "9:16"
+    ],
+    "gradient": "linear-gradient(135deg,#8b1a1a,#2c3e6b)",
+    "emoji": "🗻",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "參考 1930 年代旅遊海報設計，以限色扁平風格表現"
+      }
+    ]
+  },
+  {
+    "id": 114,
+    "title": "水下珊瑚海洋插畫",
+    "category": "illustration",
+    "ratio": "16:9",
+    "prompt": "Underwater coral reef scene illustration, vibrant tropical fish swimming among colorful coral formations, bioluminescent jellyfish in background, rich cerulean blue water with light caustics from above, impressionistic brushwork meets scientific illustration detail, National Geographic meets Studio Ghibli aesthetic, wide cinematic ocean vista",
+    "neg": "dark and murky, dead coral, pollution theme, horror elements",
+    "tags": [
+      "海洋",
+      "珊瑚礁",
+      "水下世界",
+      "自然插畫"
+    ],
+    "gradient": "linear-gradient(135deg,#003366,#006699)",
+    "emoji": "🐠",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以活潑的色彩和光折射效果呈現生命力豐富的珊瑚世界"
+      }
+    ]
+  },
+  {
+    "id": 115,
+    "title": "貓咪咖啡廳插畫",
+    "category": "illustration",
+    "ratio": "1:1",
+    "prompt": "Cozy cat cafe interior illustration, multiple cats lounging on wooden furniture and window sills, warm afternoon sunlight streaming through lace curtains, hanging plants and coffee cups, whimsical and charming storybook illustration style, muted earth tones with pops of terracotta and sage, fine ink linework with watercolor wash, small details inviting exploration",
+    "neg": "realistic photo style, dark, modern minimalism, cartoon without detail",
+    "tags": [
+      "貓咪",
+      "咖啡廳",
+      "插畫",
+      "溫暖場景",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#f5e6d0,#e8d0b0)",
+    "emoji": "🐱",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以溫暖的午後光線為主調，描繪充滿細節的貓咪咖啡廳"
+      }
+    ]
+  },
+  {
+    "id": 116,
+    "title": "太空探險家插畫",
+    "category": "illustration",
+    "ratio": "9:16",
+    "prompt": "Space explorer astronaut illustration, lone astronaut in vintage-style spacesuit floating above alien planet surface, twin moons rising, nebula clouds in vibrant purple and teal, distant stars and galaxies, retro sci-fi aesthetic meets modern digital painting, rich color contrast, sense of wonder and solitude, editorial illustration quality",
+    "neg": "realistic NASA photo style, horror alien, dark dystopian tone",
+    "tags": [
+      "太空",
+      "探險家",
+      "科幻插畫",
+      "復古未來"
+    ],
+    "gradient": "linear-gradient(135deg,#0a0a1e,#1a0533)",
+    "emoji": "🚀",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以復古太空時代美學詮釋孤獨探索的奇妙感受"
+      }
+    ]
+  },
+  {
+    "id": 117,
+    "title": "中秋節節慶插畫",
+    "category": "illustration",
+    "ratio": "1:1",
+    "prompt": "Mid-Autumn Festival illustration, family gathering under enormous full moon, traditional Chinese lanterns in warm orange and red, children running with paper lanterns, mooncake box arrangement in foreground, ancient osmanthus tree silhouette, warm nostalgic color palette, traditional Chinese ink painting style meets modern flat illustration, festive and heartwarming",
+    "neg": "modern setting, dark, scary, Western Halloween aesthetic",
+    "tags": [
+      "中秋節",
+      "節慶插畫",
+      "中式傳統",
+      "月亮",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#8b4400,#cc6600)",
+    "emoji": "🌕",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以傳統水墨意境與現代插畫技法融合，呈現中秋溫情"
+      }
+    ]
+  },
+  {
+    "id": 118,
+    "title": "賽博龐克武士插畫",
+    "category": "illustration",
+    "ratio": "9:16",
+    "prompt": "Cyberpunk samurai warrior illustration, traditional Japanese warrior with neon-lit cybernetic enhancements, standing in rain-soaked futuristic Tokyo alley, cherry blossoms falling mixed with holographic advertisements, blade with energy glow, dark dramatic lighting with neon pink and blue reflections, concept art style, high detail character illustration",
+    "neg": "childish style, pastel cute, historical accuracy without cyber elements",
+    "tags": [
+      "武士",
+      "賽博龐克",
+      "角色插畫",
+      "未來日本"
+    ],
+    "gradient": "linear-gradient(135deg,#1a0022,#2d0044)",
+    "emoji": "⚔️",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "日本傳統武士美學與賽博龐克霓虹世界的衝突融合"
+      }
+    ]
+  },
+  {
+    "id": 119,
+    "title": "植物療癒系插畫",
+    "category": "illustration",
+    "ratio": "1:1",
+    "prompt": "Botanical healing illustration, assortment of medicinal herbs and wildflowers in detailed scientific illustration style, hand-drawn ink linework with delicate watercolor fills, sage green, dusty rose and cream palette, Latin plant names in elegant calligraphy, pressed flower aesthetic, vintage apothecary handbook meets modern wellness brand, flat lay composition",
+    "neg": "3D render, photorealistic, dark, cluttered without order",
+    "tags": [
+      "植物插畫",
+      "療癒系",
+      "水彩",
+      "植物學",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#e8f5e0,#d4e8c0)",
+    "emoji": "🌿",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以維多利亞時代植物學插圖為靈感，融入現代療癒美學"
+      }
+    ]
+  },
+  {
+    "id": 120,
+    "title": "彩虹幾何抽象插畫",
+    "category": "illustration",
+    "ratio": "1:1",
+    "prompt": "Abstract geometric rainbow illustration, dynamic composition of overlapping translucent geometric shapes, circle, triangle and hexagon motifs, bold vibrant rainbow gradient color flow, clean vector art style, Swiss design grid principles, positive energy and joyful aesthetic, suitable for album cover or brand art, high contrast against white background",
+    "neg": "dark and moody, representational objects, cluttered organic shapes",
+    "tags": [
+      "幾何抽象",
+      "彩虹",
+      "向量插畫",
+      "品牌藝術"
+    ],
+    "gradient": "linear-gradient(135deg,#ff6b6b,#4ecdc4)",
+    "emoji": "🌈",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以瑞士設計格網原則為基礎，探索幾何圖形的色彩律動"
+      }
+    ]
+  },
+  {
+    "id": 121,
+    "title": "未來派玻璃博物館",
+    "category": "architecture",
+    "ratio": "16:9",
+    "prompt": "Futuristic glass museum architecture, sweeping curved transparent facade reflecting cloud-filled sky, structural steel exoskeleton visible through glass panels, surrounded by sculptural landscape garden, golden hour warm light creating rainbow refractions, architectural photography style, ultra-wide angle lens, Zaha Hadid inspired parametric design, photorealistic render",
+    "neg": "old building, historical architecture, interior only, dark stormy weather",
+    "tags": [
+      "博物館",
+      "玻璃建築",
+      "參數化設計",
+      "未來建築"
+    ],
+    "gradient": "linear-gradient(135deg,#b8d8f8,#e8f4fe)",
+    "emoji": "🏛️",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以 Zaha Hadid 流動曲線美學為靈感，探索玻璃與光的關係"
+      }
+    ]
+  },
+  {
+    "id": 122,
+    "title": "日式枯山水庭院",
+    "category": "architecture",
+    "ratio": "16:9",
+    "prompt": "Traditional Japanese Zen rock garden architecture photography, immaculate raked gravel patterns around moss-covered stones, ancient wooden veranda in foreground, maple tree with autumn foliage, distant mountain backdrop, early morning soft mist, perfect bilateral symmetry, meditative stillness, Canon tilt-shift lens creating selective focus, golden morning light",
+    "neg": "modern elements, colorful flowers, people, cluttered scene",
+    "tags": [
+      "枯山水",
+      "日式庭院",
+      "禪意",
+      "建築攝影"
+    ],
+    "gradient": "linear-gradient(135deg,#e8e0d8,#d4c8b8)",
+    "emoji": "🪨",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以早晨薄霧與移軸鏡頭強調日式庭院的寧靜禪意"
+      }
+    ]
+  },
+  {
+    "id": 123,
+    "title": "工業風閣樓公寓",
+    "category": "architecture",
+    "ratio": "9:16",
+    "prompt": "Industrial loft apartment interior architecture, exposed red brick walls and structural steel beams, polished concrete floors, floor-to-ceiling steel-frame windows with city views, minimal furniture in warm leather and dark wood, Edison bulb pendant lighting, Brooklyn-inspired aesthetic, interior architecture photography, dusk blue hour, professional architectural photography",
+    "neg": "suburban house style, colorful cluttered decor, no natural light",
+    "tags": [
+      "工業風",
+      "閣樓",
+      "室內建築",
+      "紅磚"
+    ],
+    "gradient": "linear-gradient(135deg,#3d2010,#5a3018)",
+    "emoji": "🏭",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以布魯克林工業閣樓為靈感，展現粗獷與精緻的平衡"
+      }
+    ]
+  },
+  {
+    "id": 124,
+    "title": "北歐木構住宅",
+    "category": "architecture",
+    "ratio": "16:9",
+    "prompt": "Scandinavian timber frame house architecture exterior, dark charcoal stained wooden cladding, large asymmetric windows, birch forest surroundings with light snow dusting, warm interior glow visible through windows, minimal Scandinavian landscape design, slate sky creates dramatic contrast, architectural photography, Canon 24mm tilt-shift, twilight dusk lighting",
+    "neg": "tropical setting, colorful facade, cluttered landscaping, summer",
+    "tags": [
+      "北歐建築",
+      "木構造",
+      "極簡住宅",
+      "雪景"
+    ],
+    "gradient": "linear-gradient(135deg,#1a2010,#2d3418)",
+    "emoji": "🏠",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以深色木材外牆對比雪景白地，呈現北歐建築簡練美學"
+      }
+    ]
+  },
+  {
+    "id": 125,
+    "title": "摩登香港天際線",
+    "category": "architecture",
+    "ratio": "16:9",
+    "prompt": "Modern Hong Kong skyline architectural photography, dense vertical skyscrapers with mixed architectural styles, Victoria Harbour foreground reflections, dramatic storm clouds above with light breaking through, blue hour twilight, neon sign details visible on lower buildings, urban canyon perspective from street level looking up, wide angle architecture lens",
+    "neg": "empty city, daylight flat light, single building only",
+    "tags": [
+      "香港",
+      "天際線",
+      "城市建築",
+      "藍調時刻"
+    ],
+    "gradient": "linear-gradient(135deg,#0d1a2d,#1a2d44)",
+    "emoji": "🌆",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以藍調時刻捕捉香港天際線的密度與層次感"
+      }
+    ]
+  },
+  {
+    "id": 126,
+    "title": "廢棄工廠美學",
+    "category": "architecture",
+    "ratio": "16:9",
+    "prompt": "Abandoned factory interior architecture, vast industrial space with crumbling concrete floors, shafts of light through broken skylights creating dramatic god rays, overgrown vegetation reclaiming machinery, rust textures and peeling paint layers, urban exploration aesthetic, dramatic chiaroscuro lighting, architectural photography with ultra-wide angle, haunting beauty",
+    "neg": "clean modern space, people present, daylight exterior, cheerful colors",
+    "tags": [
+      "廢墟",
+      "工廠",
+      "工業美學",
+      "光影"
+    ],
+    "gradient": "linear-gradient(135deg,#1a1410,#2d2018)",
+    "emoji": "🏚️",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以破天窗透入的光束強調廢棄工廠的悲壯美學"
+      }
+    ]
+  },
+  {
+    "id": 127,
+    "title": "熱帶雨林樹屋",
+    "category": "architecture",
+    "ratio": "9:16",
+    "prompt": "Tropical rainforest treehouse architecture, elevated wooden structure woven between ancient trees, suspension bridge entrance, bamboo and reclaimed wood construction, open-air sleeping deck with hammock, surrounded by dense tropical foliage and orchids, morning mist drifting, warm dappled light through canopy, eco-architecture photography",
+    "neg": "urban setting, concrete materials, windowless, dark interior",
+    "tags": [
+      "樹屋",
+      "熱帶",
+      "生態建築",
+      "雨林"
+    ],
+    "gradient": "linear-gradient(135deg,#1a3310,#2d5518)",
+    "emoji": "🌳",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以永續生態材料為核心，呈現人與熱帶雨林共生的建築"
+      }
+    ]
+  },
+  {
+    "id": 128,
+    "title": "沙漠混凝土教堂",
+    "category": "architecture",
+    "ratio": "16:9",
+    "prompt": "Desert brutalist chapel architecture, monolithic raw concrete structure in arid landscape, single dramatic skylight creating a beam of light to altar, minimalist interior with rough-form concrete walls, small aperture windows framing desert sky, spiritual architecture photography, golden dusk sidelight sculpting concrete textures, Tadao Ando meets Alvaro Siza",
+    "neg": "ornate traditional church, colorful stained glass, tropical setting",
+    "tags": [
+      "混凝土建築",
+      "教堂",
+      "沙漠",
+      "粗獷主義"
+    ],
+    "gradient": "linear-gradient(135deg,#c8a878,#a08858)",
+    "emoji": "⛪",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以安藤忠雄的光線哲學，用單一天光賦予混凝土精神性"
+      }
+    ]
+  },
+  {
+    "id": 129,
+    "title": "霓虹夜市街景",
+    "category": "architecture",
+    "ratio": "9:16",
+    "prompt": "Night market street architecture photography, dense narrow alley lined with traditional shophouse facades, layers of neon signage in Chinese characters glowing in rain-wet cobblestones, steam from food stalls, red lanterns strung overhead, warm tungsten light mixed with cool neon reflections, Kowloon Walled City inspired atmosphere, street photography lens",
+    "neg": "empty streets, daylight, modern shopping mall, Western architecture",
+    "tags": [
+      "夜市",
+      "街景",
+      "霓虹",
+      "傳統騎樓",
+      "9:16"
+    ],
+    "gradient": "linear-gradient(135deg,#1a0808,#3d1010)",
+    "emoji": "🏮",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以九龍城寨為靈感，呈現霓虹夜雨中的傳統夜市建築密度"
+      }
+    ]
+  },
+  {
+    "id": 130,
+    "title": "白色洞穴住宅",
+    "category": "architecture",
+    "ratio": "16:9",
+    "prompt": "Mediterranean cave house architecture, organic whitewashed cavern dwelling built into cliff face, cascading terraces with bougainvillea flowers, infinity pool merging with Aegean Sea horizon, warm golden sunlight casting deep shadows in curved archways, Santorini-inspired but more cave-like, architectural photography at golden hour, extreme wide angle",
+    "neg": "dark cave, gothic, no sea view, modern glass facade",
+    "tags": [
+      "洞穴住宅",
+      "白色建築",
+      "地中海",
+      "無邊際泳池"
+    ],
+    "gradient": "linear-gradient(135deg,#f8f4e8,#e8e0d0)",
+    "emoji": "🏰",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以聖托里尼洞穴建築為靈感，強調有機曲線與海天一色"
+      }
+    ]
+  },
+  {
+    "id": 131,
+    "title": "蜜蜂複眼微距",
+    "category": "macro",
+    "ratio": "1:1",
+    "prompt": "Extreme macro photograph of honey bee compound eye, razor-sharp hexagonal ommatidia pattern in stunning detail, iridescent reflections within each facet, fine facial hairs visible around the eye, warm amber and brown tones, black abstract background, scientific macro photography, Canon MP-E 65mm macro lens, ring flash lighting, focus stacking technique",
+    "neg": "blurry, low magnification, horror distortion, cartoon style",
+    "tags": [
+      "微距攝影",
+      "蜜蜂",
+      "複眼",
+      "昆蟲",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#4d3000,#8b5500)",
+    "emoji": "🐝",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以焦點堆疊技術拍攝蜜蜂複眼，呈現超高放大率下的幾何美感"
+      }
+    ]
+  },
+  {
+    "id": 132,
+    "title": "雪花晶體微距",
+    "category": "macro",
+    "ratio": "1:1",
+    "prompt": "Extreme close-up macro photograph of single snowflake crystal on dark velvet surface, perfectly symmetrical six-sided dendrite structure, intricate branching patterns with sub-branches, subtle blue and white color gradations, surrounding unfocused snowflakes creating bokeh, controlled studio macro photography, diffused backlit setup, Nikon macro lens, sharp crystalline detail",
+    "neg": "fake prop snowflake, CGI render, warm tones, abstract",
+    "tags": [
+      "雪花",
+      "微距攝影",
+      "晶體",
+      "冬季",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#b8d8f8,#ddeeff)",
+    "emoji": "❄️",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以暗色天鵝絨背景反射雪花晶體，呈現六角對稱的數學之美"
+      }
+    ]
+  },
+  {
+    "id": 133,
+    "title": "玫瑰花蕊微距",
+    "category": "macro",
+    "ratio": "1:1",
+    "prompt": "Extreme macro photograph of rose flower center, spiral arrangement of yellow stamens and pistil in mathematical perfection, soft pink petals framing the center in gentle bokeh, morning dew droplets on petal edges, warm golden rim lighting, green stem visible in extreme bokeh background, intimate floral macro photography, 100mm macro lens f/2.8",
+    "neg": "full flower wide shot, artificial flower, cold lighting, no detail",
+    "tags": [
+      "玫瑰",
+      "花蕊",
+      "微距攝影",
+      "植物",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#f8d0d8,#f0a8b8)",
+    "emoji": "🌹",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以早晨露珠與黃金側光強調花蕊的數學排列之美"
+      }
+    ]
+  },
+  {
+    "id": 134,
+    "title": "水滴碰撞瞬間",
+    "category": "macro",
+    "ratio": "1:1",
+    "prompt": "High-speed macro photograph of water droplet collision, perfect crown splash formation captured at peak moment, multiple secondary droplets suspended in air, rich cobalt blue water with green food coloring gradient, dark background making droplets luminous, studio strobe freezing motion, ultra-sharp detail of each tiny rivulet, liquid sculpture photography",
+    "neg": "blurry, static water, no splash formation, outdoor muddy water",
+    "tags": [
+      "水滴",
+      "高速攝影",
+      "微距",
+      "液體藝術",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#001a33,#003366)",
+    "emoji": "💧",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以微秒閃光燈凍結水冠形成瞬間，展現流體動力學之美"
+      }
+    ]
+  },
+  {
+    "id": 135,
+    "title": "蜻蜓翅膀紋理",
+    "category": "macro",
+    "ratio": "16:9",
+    "prompt": "Extreme macro photograph of dragonfly wing surface, intricate vein network creating iridescent stained-glass pattern, rainbow spectrum reflected from wing membrane, detailed texture of individual cells between veins, shallow depth of field blurring background to pure black, backlit natural light source, wide macro composition showing full wing span, stunning entomological detail",
+    "neg": "full dragonfly portrait, blurry wings, artificial color grading",
+    "tags": [
+      "蜻蜓",
+      "翅膀",
+      "微距攝影",
+      "彩虹",
+      "16:9"
+    ],
+    "gradient": "linear-gradient(135deg,#003322,#006644)",
+    "emoji": "🪲",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以背光照射翅膀薄膜，呈現蜻蜓翅脈的彩虹色散效應"
+      }
+    ]
+  },
+  {
+    "id": 136,
+    "title": "菌絲網路微距",
+    "category": "macro",
+    "ratio": "1:1",
+    "prompt": "Macro photograph of mycelium fungal network on decaying wood, white thread-like hyphae creating intricate web pattern, bioluminescent green glow effect on darker specimens, rich brown and orange tones of decomposing substrate, depth layers showing network structure, scientific nature macro photography, ring flash and diffused side lighting, focus stacking for sharpness throughout",
+    "neg": "edible mushroom food photo, artificial fungus model, cartoon style",
+    "tags": [
+      "菌絲",
+      "真菌網路",
+      "微距攝影",
+      "自然科學",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#1a2800,#2d4400)",
+    "emoji": "🍄",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以科學攝影視角呈現菌絲網路，如同自然界的神經系統"
+      }
+    ]
+  },
+  {
+    "id": 137,
+    "title": "蝴蝶鱗片微距",
+    "category": "macro",
+    "ratio": "1:1",
+    "prompt": "Extreme close-up macro of butterfly wing scales, overlapping tile-like iridescent scale structures, morpho butterfly electric blue shimmer with structural coloration, individual scales sharp with fine ridges visible under magnification, rich depth of color from multiple angles, scientific entomology photography, SEM-inspired aesthetic but photographic, ring flash macro lighting",
+    "neg": "full butterfly photo, painted wing, dull colors, blurry scales",
+    "tags": [
+      "蝴蝶",
+      "鱗片",
+      "微距攝影",
+      "電子顯微鏡",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#001a66,#0033cc)",
+    "emoji": "🦋",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以電子顯微鏡美學啟發，捕捉嗎啡蝶鱗片的結構色彩"
+      }
+    ]
+  },
+  {
+    "id": 138,
+    "title": "咖啡豆表面微距",
+    "category": "macro",
+    "ratio": "1:1",
+    "prompt": "Extreme macro photograph of single roasted coffee bean surface, deep dark brown furrows and ridges in sharp relief, center crease running through the bean, subtle oils shimmering on surface, warm dark chocolate and mahogany tones, dramatic side lighting creating deep texture shadows, black background, food macro photography, Laowa 25mm macro lens, 5:1 magnification ratio",
+    "neg": "coffee in cup, latte art, wide shot of many beans, blurry",
+    "tags": [
+      "咖啡豆",
+      "微距攝影",
+      "食物攝影",
+      "質地",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#1a0a00,#2d1500)",
+    "emoji": "☕",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以強側光強調咖啡豆表面的褶皺紋理，呈現烘焙痕跡"
+      }
+    ]
+  },
+  {
+    "id": 139,
+    "title": "電路板俯視微距",
+    "category": "macro",
+    "ratio": "1:1",
+    "prompt": "Overhead macro photograph of colorful circuit board, dense PCB landscape with green substrate, golden solder traces like city roads from above, miniature electronic components as buildings, capacitors and resistors in sharp detail, aerial city metaphor, dramatic top-down lighting with shallow depth of field, tech macro photography, warm and cool light mix",
+    "neg": "blurry, damaged board, low magnification showing full board, dirty",
+    "tags": [
+      "電路板",
+      "微距攝影",
+      "科技",
+      "俯視",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#003300,#005500)",
+    "emoji": "🔬",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以俯視視角將電路板轉化為鳥瞰城市景觀的視覺隱喻"
+      }
+    ]
+  },
+  {
+    "id": 140,
+    "title": "沙粒質地微距",
+    "category": "macro",
+    "ratio": "1:1",
+    "prompt": "Extreme close-up macro photograph of beach sand grains, each grain a unique translucent gemstone of varied color, rose quartz pink, clear crystal, obsidian black and feldspar orange grains, arranged like a mosaic with spaces between visible, backlit studio setup revealing internal color, scale reference impossible without context, geological macro photography",
+    "neg": "beach overview, dirty muddy sand, uniform color sand, blurry",
+    "tags": [
+      "沙粒",
+      "微距攝影",
+      "礦物",
+      "地質",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#c8a878,#e0c090)",
+    "emoji": "🏖️",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以背光照射沙粒，將每顆沙粒還原為獨特的微型寶石"
+      }
+    ]
+  },
+  {
+    "id": 141,
+    "title": "極光冰島夜空",
+    "category": "landscape",
+    "ratio": "16:9",
+    "prompt": "Northern lights aurora borealis over Iceland landscape, dramatic green and purple aurora curtains dancing above frozen black sand beach, silhouetted sea stacks in foreground, starry sky visible through aurora, long exposure photography, reflection of aurora in shallow tidal pools, Milky Way faintly visible, ultra-wide angle 14mm lens, cold blue midnight atmosphere",
+    "neg": "daytime, cloudy sky, no aurora, warm colors, tropical",
+    "tags": [
+      "極光",
+      "冰島",
+      "夜空",
+      "長時間曝光",
+      "16:9"
+    ],
+    "gradient": "linear-gradient(135deg,#001a10,#003322)",
+    "emoji": "🌌",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以超廣角捕捉冰島黑沙灘與極光的倒影，最大化廣角透視"
+      }
+    ]
+  },
+  {
+    "id": 142,
+    "title": "粉紅流沙漠",
+    "category": "landscape",
+    "ratio": "16:9",
+    "prompt": "Pink sand desert at golden hour, rolling dunes of rose and blush pink desert sand, long shadows from dune crests, solitary camel silhouette in middle distance, clear azure sky, heat haze shimmer on horizon, vast open space and silence communicated through composition, aerial drone perspective, Sahara-inspired but with unique pink mineral sand coloration",
+    "neg": "green oasis, cold weather, rainy, crowded",
+    "tags": [
+      "粉紅沙漠",
+      "沙丘",
+      "黃金時刻",
+      "航拍",
+      "16:9"
+    ],
+    "gradient": "linear-gradient(135deg,#f8c8c0,#e0a898)",
+    "emoji": "🏜️",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以航拍視角突顯粉色沙丘的漸層與孤獨駱駝的尺度對比"
+      }
+    ]
+  },
+  {
+    "id": 143,
+    "title": "雨後霓虹倒影",
+    "category": "social",
+    "ratio": "1:1",
+    "prompt": "Night street after rain, neon signs reflecting in wet pavement puddles creating abstract color pools, lone pedestrian with umbrella in middle distance, bokeh light orbs from passing cars, deep perspective down narrow urban alley, pink and blue neon glow dominates, cinematic street photography, 35mm film aesthetic, grain texture, Tokyo Shinjuku inspired atmosphere",
+    "neg": "daylight, dry pavement, suburban, no reflections, happy tourism",
+    "tags": [
+      "霓虹",
+      "雨後倒影",
+      "街拍",
+      "東京",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#0a0010,#1a0028)",
+    "emoji": "🌧️",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以雨後濕地的霓虹倒影創造超現實的色彩疊影效果"
+      }
+    ]
+  },
+  {
+    "id": 144,
+    "title": "精品香水廣告攝影",
+    "category": "product",
+    "ratio": "9:16",
+    "prompt": "Luxury perfume bottle product photography, elegant crystal flacon with gold cap, placed on black marble surface with scattered rose petals, soft volumetric light from upper left creating caustic reflections through glass, warm amber liquid visible, editorial advertising photography, Canon 100mm macro lens, professional retouching clean background, high-end fragrance brand aesthetic",
+    "neg": "plastic bottle, cluttered background, amateur lighting, low budget",
+    "tags": [
+      "香水",
+      "精品廣告",
+      "商品攝影",
+      "大理石",
+      "9:16"
+    ],
+    "gradient": "linear-gradient(135deg,#1a0a00,#3d2000)",
+    "emoji": "🌸",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以大理石場景與玫瑰花瓣強調頂奢香水的感官敘事"
+      }
+    ]
+  },
+  {
+    "id": 145,
+    "title": "運動鞋懸浮攝影",
+    "category": "product",
+    "ratio": "1:1",
+    "prompt": "Athletic sneaker levitation product photography, premium limited edition running shoe floating in mid-air against pure white background, dynamic debris and dust particles suspended around shoe as if just landed, dramatic underlighting in blue and white, bold shadow beneath, clean editorial product photography, commercial advertising style, Nike or Adidas campaign aesthetic",
+    "neg": "dirty shoe, foot inside, flat lay without dynamism, outdoor on feet",
+    "tags": [
+      "運動鞋",
+      "懸浮攝影",
+      "商品攝影",
+      "廣告",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#e8f4fe,#b8d8f8)",
+    "emoji": "👟",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以懸浮加動態粉塵強化運動鞋的能量感與廣告張力"
+      }
+    ]
+  },
+  {
+    "id": 146,
+    "title": "奢華手錶特寫",
+    "category": "product",
+    "ratio": "1:1",
+    "prompt": "Luxury mechanical watch macro product photography, intricate dial details with Roman numerals and guilloché texture, Swiss movement partially visible through exhibition caseback, warm tungsten studio lighting on gold and silver case, reflection of studio softbox in polished bezel, black velvet display pad, Rolex or Patek Philippe level advertising photography, extreme detail focus",
+    "neg": "plastic watch, digital display, dark photography, dirty watch",
+    "tags": [
+      "手錶",
+      "奢華",
+      "商品攝影",
+      "瑞士機械",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#1a1200,#2d2000)",
+    "emoji": "⌚",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以鎢絲光源強調金屬光澤，展現瑞士機械錶的製錶工藝"
+      }
+    ]
+  },
+  {
+    "id": 147,
+    "title": "電音音樂節海報",
+    "category": "poster",
+    "ratio": "9:16",
+    "prompt": "Electronic music festival event poster design, glowing neon wireframe landscape with geometric prisms, UV reactive color palette of electric blue, hot pink and acid yellow, DJ silhouette above crowd illustration, bold condensed typeface for lineup names, ticket information section at bottom, laser beam effects, dark background with chromatic aberration effect, festival brand identity design",
+    "neg": "rock concert aesthetic, acoustic instruments, daytime outdoor, serif fonts",
+    "tags": [
+      "電子音樂",
+      "音樂節",
+      "海報設計",
+      "霓虹",
+      "9:16"
+    ],
+    "gradient": "linear-gradient(135deg,#000a1a,#001433)",
+    "emoji": "🎧",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以 UV 螢光色彩和雷射光效打造沉浸式電子音樂節氛圍"
+      }
+    ]
+  },
+  {
+    "id": 148,
+    "title": "有機護膚品牌Logo",
+    "category": "logo",
+    "ratio": "1:1",
+    "prompt": "Organic skincare brand logo design, delicate botanical line illustration of herb and leaf motifs encircling clean serif wordmark, sage green and cream color palette, hand-drawn feel with professional execution, natural and trustworthy brand aesthetic, minimalist negative space usage, suitable for embossing and product packaging, clean vector format",
+    "neg": "synthetic chemical lab aesthetic, neon colors, complex cluttered design",
+    "tags": [
+      "有機",
+      "護膚品",
+      "Logo設計",
+      "植物",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#e8f5e0,#d4e8c0)",
+    "emoji": "🌱",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以手繪植物線條賦予品牌自然溫度，結合簡潔的無襯線字體"
+      }
+    ]
+  },
+  {
+    "id": 149,
+    "title": "復古車廠品牌標誌",
+    "category": "logo",
+    "ratio": "1:1",
+    "prompt": "Vintage automotive garage brand logo design, classic American muscle car silhouette within circular badge, bold Art Deco typography, chrome and midnight blue color palette, radiating speed lines in background, vintage fuel station sign aesthetic, 1950s era design inspiration, professional vector logo suitable for signage and workwear embroidery",
+    "neg": "modern EV car, tech startup style, pastel colors, overly complex",
+    "tags": [
+      "復古",
+      "汽車",
+      "徽章Logo",
+      "Art Deco",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#0d1a2d,#1a2d44)",
+    "emoji": "🚗",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以 1950 年代美式汽車文化為根基，打造復古徽章型 Logo"
+      }
+    ]
+  },
+  {
+    "id": 150,
+    "title": "海邊金發人像",
+    "category": "portrait",
+    "ratio": "9:16",
+    "prompt": "Golden hour beach portrait photography, young woman with windswept blonde hair, soft sand dunes background in warm bokeh, backlit halo of golden sunlight creating rim light around silhouette, candid laughing expression, warm orange and gold color grade, lifestyle editorial photography, 85mm f/1.4 shallow depth of field, film-inspired warm tones, emotional and authentic",
+    "neg": "studio flash, overexposed, artificial hair, staged pose, cold colors",
+    "tags": [
+      "人像",
+      "黃金時刻",
+      "海邊",
+      "自然光",
+      "9:16"
+    ],
+    "gradient": "linear-gradient(135deg,#c86400,#e89640)",
+    "emoji": "🏄",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以逆光黃金時刻強調海邊人像的溫暖情緒與風中動感"
+      }
+    ]
+  },
+  {
+    "id": 151,
+    "title": "老人智慧人像",
+    "category": "portrait",
+    "ratio": "1:1",
+    "prompt": "Elderly man character portrait photography, deeply weathered face with profound wrinkles telling life's stories, warm kind eyes with cataracts creating milky depth, silver stubble beard, soft window light from side creating dramatic yet gentle shadows, black and white with subtle warm tone, 50mm prime lens tight crop, documentary portrait photography, National Geographic aesthetic",
+    "neg": "ageist, unflattering, harsh flash, colorful distracting background",
+    "tags": [
+      "老人",
+      "人像攝影",
+      "黑白",
+      "生命故事",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#1a1a18,#2d2d28)",
+    "emoji": "👴",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以單側窗光和黑白影調捕捉歲月在面孔上留下的生命印記"
+      }
+    ]
+  },
+  {
+    "id": 152,
+    "title": "台灣茶道靜物",
+    "category": "product",
+    "ratio": "1:1",
+    "prompt": "Taiwanese tea ceremony still life product photography, celadon gongfu tea set arrangement, steam rising from tea cup, raw pu-erh tea cake beside bamboo tea tray, morning light through rice paper window creating soft diffused illumination, earthy clay teapot in foreground sharp, bokeh background of tea plantation, minimal East Asian aesthetic, warm and meditative",
+    "neg": "Western tea bag, commercial plastic cups, harsh studio flash, cluttered",
+    "tags": [
+      "台灣茶道",
+      "靜物攝影",
+      "功夫茶",
+      "東方美學",
+      "1:1"
+    ],
+    "gradient": "linear-gradient(135deg,#2d4400,#446618)",
+    "emoji": "🍵",
+    "versions": [
+      {
+        "ver": "v1",
+        "change": "以宣紙窗光和青瓷茶具呈現台灣功夫茶道的清靜禪意"
+      }
+    ]
+  }
+];
+
+var PERSONAL_PROMPTS = [
+  {id:201,title:"學者風：現代圖書館",category:"personal",ratio:"4:3",
+   prompt:"Photorealistic portrait of a scholarly Asian middle-aged man in a well-fitted navy blue suit and light blue shirt with refined glasses, sitting in a bright modern university library, holding a book, confident and wise smile looking at camera, soft professional window lighting, bokeh bookshelves and campus view behind, high-end editorial photography, Canon 85mm f/1.4",
+   neg:"bad anatomy, blurry face, distorted, extra fingers, low quality, ugly, overexposed",
+   tags:["個人風格","學者","圖書館","西裝","寫實攝影"],
+   gradient:"linear-gradient(135deg,#1a2744,#2d3d6b)",emoji:"📚",
+   versions:[{ver:"v1",change:"深藍西裝搭配柔和圖書館光線，強調睿智學者形象"}]},
+
+  {id:202,title:"型男風：城市黃昏露台",category:"personal",ratio:"9:16",
+   prompt:"Cinematic portrait of a sophisticated Asian man in dark brown leather jacket and black t-shirt, standing on a high-rise rooftop terrace at golden hour dusk, holding a whiskey glass, gazing at the glowing city skyline below, warm sunset hues and city lights reflecting on his face, mature and confident expression, movie still quality, 50mm anamorphic lens",
+   neg:"blurry, bad face, distorted body, poor lighting, cartoon style",
+   tags:["個人風格","電影感","露台","皮夾克","黃昏"],
+   gradient:"linear-gradient(135deg,#1a0800,#3d1a00)",emoji:"🥃",
+   versions:[{ver:"v1",change:"黃昏城市光線映照皮夾克，呈現成熟型男的都市質感"}]},
+
+  {id:203,title:"藝術插畫：水彩學者",category:"personal",ratio:"1:1",
+   prompt:"Artistic watercolor and ink illustration of a scholarly Asian man in a purple linen shirt, writing in a notebook, surrounded by abstract watercolor splashes in lavender, tea brown and indigo, fine ink linework of books, flasks, charts and heart balloons in soft background, intellectual and creative fusion aesthetic, warm artistic atmosphere, painterly digital art",
+   neg:"photorealistic, 3D render, harsh colors, childish cartoon, poor proportions",
+   tags:["個人風格","水彩插畫","藝術風","知識","創意"],
+   gradient:"linear-gradient(135deg,#4a2d6b,#2d1a44)",emoji:"🎨",
+   versions:[{ver:"v1",change:"融合水彩墨漬與線條，以藝術語言呈現知識與創意的內在世界"}]},
+
+  {id:204,title:"暖意風：咖啡廳抓拍",category:"personal",ratio:"4:3",
+   prompt:"Candid lifestyle portrait of a friendly Asian man in light blue V-neck casual shirt, sitting in a cozy cafe with lush green plants and warm wooden furniture, caught mid-laugh at a friend's joke, holding a coffee cup, laptop and books on the table, warm soft natural side lighting, approachable and genuine personality, lifestyle editorial photography",
+   neg:"forced smile, studio backdrop, harsh flash, cluttered background, bad anatomy",
+   tags:["個人風格","咖啡廳","親切","自然笑容","生活感"],
+   gradient:"linear-gradient(135deg,#3d2010,#6b4020)",emoji:"☕",
+   versions:[{ver:"v1",change:"自然的抓拍時刻與溫暖咖啡廳氛圍，呈現平易近人的真實性格"}]},
+
+  {id:205,title:"科技未來風：全息數據中心",category:"personal",ratio:"16:9",
+   prompt:"Cinematic sci-fi portrait of an Asian tech visionary in dark technical fabric jacket with smart watch, standing before a massive data center glowing with blue and purple neon lights, reaching out to interact with floating translucent holographic data charts, server racks in background, dramatic neon rim lighting on face, futuristic and commanding presence, wide angle cinematic",
+   neg:"cheap costume, blurry hologram, poor lighting, low budget sci-fi, bad face",
+   tags:["個人風格","科幻","數據中心","全息","未來感"],
+   gradient:"linear-gradient(135deg,#001433,#0d0028)",emoji:"🖥️",
+   versions:[{ver:"v1",change:"藍紫霓虹數據中心環境強調科技遠見者的未來感權威形象"}]},
+
+  {id:206,title:"復古探險風：老式蒸汽火車",category:"personal",ratio:"4:3",
+   prompt:"Vintage film grain portrait of an Asian explorer man in cream bucket hat and plaid flannel shirt, standing beside an antique steam locomotive at a historical train station, holding an aged folded map, looking determinedly into the distance toward mountains, soft warm sepia-tinted light through steam clouds, nostalgic adventurous spirit, Kodachrome film aesthetic",
+   neg:"modern setting, digital clean look, bad hat, forced expression, no film grain",
+   tags:["個人風格","復古探險","蒸汽火車","帽子","懷舊"],
+   gradient:"linear-gradient(135deg,#4d3800,#7a5a10)",emoji:"🚂",
+   versions:[{ver:"v1","change":"仿 Kodachrome 底片色調，米白帽搭配格紋衫重現探險者的懷舊浪漫"}]},
+
+  {id:207,title:"戶外自然風：山頂觀景",category:"personal",ratio:"9:16",
+   prompt:"Dynamic outdoor portrait of an active Asian man in functional outdoor technical jacket and quick-dry pants, carrying a hiking backpack, standing triumphantly at a mountain summit viewpoint, warm genuine smile gazing at rolling mountain ridges and blue sky, fresh alpine air atmosphere, golden hour sidelight, lifestyle outdoor photography, Sony 35mm",
+   neg:"studio backdrop, urban setting, forced pose, bad anatomy, overexposed sky",
+   tags:["個人風格","戶外","山頂","登山","自然"],
+   gradient:"linear-gradient(135deg,#1a3310,#2d5518)",emoji:"🏔️",
+   versions:[{ver:"v1","change":"山頂逆光與戶外裝備呈現活力十足、享受自然的真實一面"}]},
+
+  {id:208,title:"奢華晚宴風：古典劇院",category:"personal",ratio:"9:16",
+   prompt:"High fashion luxury portrait of an elegant Asian gentleman in impeccably tailored black tuxedo with bow tie and platinum cufflinks, holding a champagne flute, engaging in polite conversation at a grand classical theater foyer, red carpet, crystal chandeliers, guests in evening gowns softly blurred in background, warm grand ballroom lighting, sophistication personified",
+   neg:"casual clothes, poor tailoring, dark underexposed, empty venue, bad posture",
+   tags:["個人風格","燕尾服","奢華","晚宴","古典劇院"],
+   gradient:"linear-gradient(135deg,#1a1200,#2d2000)",emoji:"🥂",
+   versions:[{ver:"v1","change":"金碧輝煌的劇院環境與精裁燕尾服展現最高規格的儒雅紳士形象"}]},
+
+  {id:209,title:"抽象藝術：幾何智識拼貼",category:"personal",ratio:"1:1",
+   prompt:"Abstract art collage portrait of an Asian intellectual, facial features artistically deconstructed and merged with geometric shapes, triangles, circles and angular forms, surrounded by floating book linework, data charts, diagrams, bold color blocks in deep navy, burnt orange and gold, dynamic visual tension between intellect and structure, conceptual mixed-media art, Picasso meets Bauhaus",
+   neg:"photorealistic, boring plain portrait, muddy colors, bad geometry, childish",
+   tags:["個人風格","抽象藝術","幾何","拼貼","概念藝術"],
+   gradient:"linear-gradient(135deg,#0d1a2d,#3d2800)",emoji:"🔷",
+   versions:[{ver:"v1","change":"將面部特徵解構重組為幾何拼貼，以包浩斯語言呈現理性知識的內核"}]},
+
+  {id:210,title:"街頭潮流風：都市霓虹夜拍",category:"personal",ratio:"9:16",
+   prompt:"Urban street photography portrait of a stylish Asian man in trendy oversized trench coat with baseball cap and wireless earphones, striding confidently through a neon-lit urban street filled with colorful graffiti murals and glowing shop signs, intense confident direct gaze at camera, dynamic motion blur of passing traffic behind, bokeh neon reflections on wet pavement, contemporary street style",
+   neg:"suburban, daytime, no neon, stiff pose, poor street environment, blurry face",
+   tags:["個人風格","街頭潮流","霓虹","棒球帽","都市夜景"],
+   gradient:"linear-gradient(135deg,#0a0010,#1a0028)",emoji:"🎧",
+   versions:[{ver:"v1","change":"霓虹夜街與潮流外搭呈現當代都市男士的自信與自由氣場"}]}
+];
+
+var CAT_META = {
+  social:{label:'社群媒體',emoji:'📱',desc:'Instagram、YouTube、TikTok 等平台專用'},
+  product:{label:'商品攝影',emoji:'📦',desc:'電商與產品展示提示語'},
+  poster:{label:'活動海報',emoji:'🎪',desc:'活動、演唱會、展覽海報設計'},
+  logo:{label:'Logo 設計',emoji:'⭐',desc:'品牌識別與標誌設計'},
+  portrait:{label:'人像攝影',emoji:'👤',desc:'人物與角色攝影風格'},
+  landscape:{label:'風景場景',emoji:'🌄',desc:'自然風景與城市場景'},
+  uiux:{label:'UI/UX 設計',emoji:'🖥️',desc:'App 介面、網頁設計、互動原型'},
+  illustration:{label:'插畫創作',emoji:'🎨',desc:'數位插畫、概念藝術、繪本風格'},
+  architecture:{label:'建築設計',emoji:'🏛️',desc:'室內外建築、空間攝影與設計'},
+  macro:{label:'微距攝影',emoji:'🔬',desc:'極近距離的自然與物件細節攝影'},
+  personal:{label:'我的個人風格',emoji:'🌟',desc:'以你為主角的 10 種形象場景提示語，可搭配照片使用'}
+};
+
+var BD = {
+  subject:['商品','人像','風景','食物','建築','動物','概念圖','角色設計','海報','Logo'],
+  style:['極簡主義','Cyberpunk','日系清新','3D黏土','水彩插畫','電影感','Y2K復古','黑金奢華','北歐風','暗黑系'],
+  lighting:['柔和自然光','黃金時刻','硬打光','攝影棚燈光','霓虹環境光','窗邊側光','夜景街燈','俯光'],
+  camera:['超廣角鏡頭','50mm定焦','微距鏡頭','俯拍','仰拍','景深淺'],
+  render:['Unreal Engine 5','Blender渲染','電影攝影','8K照片','Octane Render']
+};
+
+var ZH_EN={'商品':'product shot','人像':'portrait','風景':'landscape','食物':'food photography','建築':'architecture','動物':'animal','概念圖':'concept art','角色設計':'character design','海報':'poster design','Logo':'logo design','極簡主義':'minimalist style','Cyberpunk':'cyberpunk aesthetic','日系清新':'Japanese fresh aesthetic','3D黏土':'3D clay art style','水彩插畫':'watercolor illustration','電影感':'cinematic','Y2K復古':'Y2K retro aesthetic','黑金奢華':'black and gold luxury','北歐風':'Scandinavian style','暗黑系':'dark moody','柔和自然光':'soft natural light','黃金時刻':'golden hour lighting','硬打光':'harsh dramatic lighting','攝影棚燈光':'studio lighting','霓虹環境光':'neon ambient light','窗邊側光':'window side light','夜景街燈':'night street lighting','俯光':'overhead lighting','超廣角鏡頭':'ultra wide angle lens','50mm定焦':'50mm prime lens','微距鏡頭':'macro lens','俯拍':'bird eye view','仰拍':'low angle shot','景深淺':'shallow depth of field','Unreal Engine 5':'Unreal Engine 5','Blender渲染':'Blender render','電影攝影':'professional film photography','8K照片':'8K photography','Octane Render':'Octane Render'};
+
+var NEG_KW=['ugly','deformed','blurry','low quality','watermark','text overlay','extra fingers','bad anatomy','overexposed','noise'];
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+var favs       = JSON.parse(localStorage.getItem('pv_favs')||'[]');
+var copies     = parseInt(localStorage.getItem('pv_copies')||'0');
+var built      = parseInt(localStorage.getItem('pv_built')||'0');
+var custom     = JSON.parse(localStorage.getItem('pv_custom')||'[]');
+var apiKey     = localStorage.getItem('pv_apikey')||'';
+var allPrompts = BASE.concat(EXTRA_PROMPTS).concat(PERSONAL_PROMPTS).concat(custom);
+var curFilter  = 'all';
+var curModalId = null;
+var bState     = {subject:[],style:[],lighting:[],camera:[],render:[]};
+var wts        = {};
+var negSel     = [];
+var selRatio   = '--ar 1:1';
+var selLang    = 'en';
+var debounceTimer = null;
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+function init() {
+  bindNav();
+  bindFilters();
+  bindSearch();
+  initBuilder();
+  initRatio();
+  initLang();
+  initImport();
+  renderGrid('prompt-grid', allPrompts);
+  updateCounts();
+  updateApiStatus();
+  renderCats();
+  document.getElementById('api-config-btn').onclick = function(){ showApiModal(); };
+  document.querySelectorAll('.modal-overlay').forEach(function(o){
+    o.addEventListener('click', function(e){ if(e.target===this) this.classList.remove('open'); });
+  });
+}
+
+// ── NAV ───────────────────────────────────────────────────────────────────
+function bindNav() {
+  document.querySelectorAll('[data-page]').forEach(function(el){
+    el.addEventListener('click', function(){ navigateTo(this.dataset.page); });
+  });
+}
+function navigateTo(p) {
+  document.querySelectorAll('.sidebar .nav-item').forEach(function(el){ el.classList.toggle('active',el.dataset.page===p); });
+  document.querySelectorAll('.tab-item').forEach(function(el){ el.classList.toggle('active',el.dataset.page===p); });
+  document.querySelectorAll('.page').forEach(function(el){ el.classList.toggle('active',el.id==='page-'+p); });
+  if(p==='favorites') renderFavs();
+  if(p==='profile')   renderProfile();
+  if(p==='categories') renderCats();
+  window.scrollTo(0,0);
+}
+
+// ── SEARCH WITH DEBOUNCE ──────────────────────────────────────────────────
+function bindSearch() {
+  function onInput(e) {
+    var v = e.target.value;
+    document.getElementById('search-desktop').value = v;
+    document.getElementById('search-mobile').value  = v;
+    // Debounce: wait 280ms after last keystroke
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(applyFilter, 280);
+  }
+  document.getElementById('search-desktop').addEventListener('input', onInput);
+  document.getElementById('search-mobile').addEventListener('input', onInput);
+}
+
+// ── FILTERS ───────────────────────────────────────────────────────────────
+function bindFilters() {
+  document.querySelectorAll('.filter-tag').forEach(function(el){
+    el.addEventListener('click', function(){
+      document.querySelectorAll('.filter-tag').forEach(function(t){ t.classList.remove('active'); });
+      this.classList.add('active');
+      curFilter = this.dataset.filter;
+      applyFilter();
+    });
+  });
+}
+function applyFilter() {
+  var q = (document.getElementById('search-desktop').value||'').toLowerCase().trim();
+  var f = allPrompts.filter(function(p){
+    var mf = curFilter==='all'||p.category===curFilter||p.ratio===curFilter||p.tags.some(function(t){return t===curFilter;});
+    var ms = !q||p.title.toLowerCase().includes(q)||p.prompt.toLowerCase().includes(q)||p.tags.join(' ').toLowerCase().includes(q)||(p.neg&&p.neg.toLowerCase().includes(q));
+    return mf&&ms;
+  });
+  renderGrid('prompt-grid', f);
+  document.getElementById('explore-count').textContent = f.length+' 個';
+}
+
+// ── RENDER GRID ───────────────────────────────────────────────────────────
+function renderSkeletons(cid, n) {
+  var c = document.getElementById(cid); if(!c) return;
+  var html = '';
+  for(var i=0;i<n;i++){
+    html += '<div class="skeleton-card"><div class="skel skel-preview"></div><div class="skel-body"><div class="skel skel-title"></div><div class="skel skel-line"></div><div class="skel skel-line short"></div><div class="skel-tags"><div class="skel skel-tag"></div><div class="skel skel-tag"></div></div><div class="skel skel-btn"></div></div></div>';
+  }
+  c.innerHTML = html;
+}
+
+function renderGrid(cid, data, withSkeleton) {
+  var c = document.getElementById(cid); if(!c) return;
+  if(withSkeleton){ renderSkeletons(cid, 6); setTimeout(function(){ _renderGrid(cid, data); }, 300); }
+  else { _renderGrid(cid, data); }
+}
+
+function _renderGrid(cid, data) {
+  var c = document.getElementById(cid); if(!c) return;
+  if(!data.length){ c.innerHTML='<div class="empty-state"><div class="empty-icon">🔍</div><p>找不到符合的提示語</p></div>'; return; }
+  c.innerHTML = data.map(cardHtml).join('');
+  c.querySelectorAll('.card-btn-copy').forEach(function(b){
+    b.addEventListener('click', function(e){ e.stopPropagation(); copyPrompt(+this.closest('.prompt-card').dataset.id); });
+  });
+  c.querySelectorAll('.like-btn').forEach(function(b){
+    b.addEventListener('click', function(e){
+      e.stopPropagation();
+      var id=+this.closest('.prompt-card').dataset.id;
+      toggleFav(id);
+      this.classList.toggle('liked', favs.indexOf(id)>-1);
+    });
+  });
+  c.querySelectorAll('.prompt-card').forEach(function(card){
+    card.addEventListener('click', function(){ openDetail(+this.dataset.id); });
+  });
+}
+
+function cardHtml(p) {
+  var isFav=favs.indexOf(p.id)>-1;
+  var tags=p.tags.map(function(t){return '<span class="card-tag'+(t.includes(':')||['1:1','16:9','9:16','4:3'].indexOf(t)>-1?' ratio':'')+'">'+t+'</span>';}).join('');
+  return '<div class="prompt-card" data-id="'+p.id+'">'+
+    '<div class="preview-ph"><div class="grad" style="background:'+p.gradient+'"></div><span style="position:relative;z-index:1">'+p.emoji+'</span></div>'+
+    '<div class="card-body"><div class="card-title">'+p.title+'</div>'+
+    '<div class="card-prompt">'+p.prompt.substring(0,95)+'…</div>'+
+    '<div class="card-tags">'+tags+'</div>'+
+    '<div class="card-actions"><button class="card-btn-copy">📋 複製提示語</button>'+
+    '<button class="card-btn-icon like-btn'+(isFav?' liked':'')+'">♥</button>'+
+    '</div></div></div>';
+}
+
+// ── CATEGORIES (with skeleton) ────────────────────────────────────────────
+function renderCats() {
+  var c = document.getElementById('categories-content');
+  // Skeleton first
+  var skelHtml = '';
+  Object.keys(CAT_META).forEach(function(cat){
+    var m=CAT_META[cat];
+    skelHtml+='<div style="margin-bottom:28px"><div class="section-header"><div class="section-title">'+m.emoji+' '+m.label+'</div></div>'+
+      '<div class="masonry-grid" id="cat-skel-'+cat+'"></div></div>';
+  });
+  c.innerHTML = skelHtml;
+  Object.keys(CAT_META).forEach(function(cat){ renderSkeletons('cat-skel-'+cat,3); });
+  // Real data after brief delay
+  setTimeout(function(){
+    var html='';
+    Object.keys(CAT_META).forEach(function(cat){
+      var m=CAT_META[cat];
+      var list=allPrompts.filter(function(p){return p.category===cat;});
+      if(!list.length) return;
+      html+='<div style="margin-bottom:28px"><div class="section-header"><div class="section-title">'+m.emoji+' '+m.label+'</div><div class="section-count">'+list.length+'</div></div>'+
+        '<p style="font-size:12.5px;color:var(--text-muted);margin-bottom:14px">'+m.desc+'</p>'+
+        '<div class="masonry-grid" id="cat-'+cat+'"></div></div>';
+    });
+    c.innerHTML = html;
+    Object.keys(CAT_META).forEach(function(cat){
+      _renderGrid('cat-'+cat, allPrompts.filter(function(p){return p.category===cat;}));
+    });
+  }, 350);
+}
+
+// ── FAV ───────────────────────────────────────────────────────────────────
+function toggleFav(id) {
+  var i=favs.indexOf(id);
+  if(i>-1){favs.splice(i,1);showToast('已取消收藏');}
+  else{favs.push(id);showToast('✦ 已加入收藏！');}
+  localStorage.setItem('pv_favs',JSON.stringify(favs));
+  updateCounts();
+}
+function renderFavs() {
+  var list=allPrompts.filter(function(p){return favs.indexOf(p.id)>-1;});
+  _renderGrid('favorites-grid', list);
+  document.getElementById('fav-count-display').textContent=list.length+' 個';
+}
+
+// ── PROFILE ───────────────────────────────────────────────────────────────
+function renderProfile() {
+  document.getElementById('stat-saved').textContent  = favs.length;
+  document.getElementById('stat-copied').textContent = copies;
+  document.getElementById('stat-built').textContent  = built;
+  document.getElementById('stat-total').textContent  = allPrompts.length;
+  _renderGrid('history-grid', allPrompts.filter(function(p){return favs.indexOf(p.id)>-1;}));
+}
+
+// ── COUNTS ────────────────────────────────────────────────────────────────
+function updateCounts() {
+  var n=favs.length;
+  document.getElementById('sb-fav-badge').textContent=n;
+  document.getElementById('sb-explore-badge').textContent=allPrompts.length; document.getElementById('explore-count').textContent=allPrompts.filter(function(p){return curFilter==='all'||p.category===curFilter||p.ratio===curFilter||p.tags.some(function(t){return t===curFilter;});}).length+' 個';
+  document.getElementById('fav-count-display').textContent=n+' 個';
+  var tb=document.getElementById('tab-fav-badge');
+  tb.textContent=n; tb.style.display=n>0?'flex':'none';
+  document.getElementById('stat-saved').textContent=n;
+}
+
+// ── COPY PROMPT ───────────────────────────────────────────────────────────
+function copyPrompt(id) {
+  var p=allPrompts.find(function(x){return x.id===id;});
+  if(!p) return;
+  navigator.clipboard.writeText(p.prompt).then(function(){
+    copies++; localStorage.setItem('pv_copies',copies);
+    showToast('✅ 已複製到剪貼簿！');
+  });
+}
+
+// ── DETAIL MODAL ──────────────────────────────────────────────────────────
+function openDetail(id) {
+  var p=allPrompts.find(function(x){return x.id===id;});
+  if(!p) return;
+  curModalId=id;
+  document.getElementById('modal-title').textContent=p.title;
+  var cat=CAT_META[p.category];
+  document.getElementById('modal-meta').innerHTML=
+    ['<span class="meta-pill">📁 '+(cat?cat.label:p.category)+'</span>',
+     '<span class="meta-pill">📐 '+(p.ratio||'1:1')+'</span>']
+    .concat(p.tags.map(function(t){return '<span class="meta-pill">'+t+'</span>';})).join('');
+  document.getElementById('modal-prompt-full').textContent=p.prompt;
+  // Neg prompt section
+  var neg=document.getElementById('modal-neg');
+  var negLabel=document.getElementById('modal-neg-label');
+  var negCopyBtn=document.getElementById('modal-copy-neg-btn');
+  if(p.neg){
+    neg.style.display='block'; neg.textContent='⊖ '+p.neg;
+    negLabel.style.display='block';
+    negCopyBtn.disabled=false; negCopyBtn.style.opacity='1';
+  } else {
+    neg.style.display='none'; negLabel.style.display='none';
+    negCopyBtn.disabled=true; negCopyBtn.style.opacity='.4';
+  }
+  document.getElementById('modal-fav-btn').textContent=favs.indexOf(id)>-1?'♥ 取消':'♥ 收藏';
+  var hist=document.getElementById('modal-history');
+  if(p.versions&&p.versions.length){
+    hist.style.display='block';
+    hist.innerHTML='<div style="font-size:13px;font-weight:600;margin-bottom:8px">版本紀錄</div>'+
+      p.versions.map(function(v){return '<div class="history-item"><span class="history-ver">'+v.ver+'</span><span class="history-text">'+v.change+'</span></div>';}).join('');
+  } else { hist.style.display='none'; }
+  openModal('modal-detail');
+}
+
+function copyModalPrompt(type) {
+  var p=allPrompts.find(function(x){return x.id===curModalId;});
+  if(!p) return;
+  var text = type==='neg' ? (p.neg||'') : p.prompt;
+  if(!text){ showToast('此提示語沒有負向提示','error'); return; }
+  navigator.clipboard.writeText(text).then(function(){
+    copies++; localStorage.setItem('pv_copies',copies);
+    showToast(type==='neg'?'⊖ 負向提示已複製！':'✅ 正向提示已複製！');
+  });
+}
+
+function toggleFavFromModal() {
+  if(!curModalId) return;
+  toggleFav(curModalId);
+  document.getElementById('modal-fav-btn').textContent=favs.indexOf(curModalId)>-1?'♥ 取消':'♥ 收藏';
+}
+
+// ── BUILDER ───────────────────────────────────────────────────────────────
+function initBuilder() {
+  Object.keys(BD).forEach(function(g){
+    var c=document.getElementById('chips-'+g); if(!c) return;
+    BD[g].forEach(function(item){
+      var chip=document.createElement('div'); chip.className='chip'; chip.textContent=item;
+      chip.addEventListener('click', function(){
+        var i=bState[g].indexOf(item);
+        if(i>-1){bState[g].splice(i,1);chip.classList.remove('selected');}
+        else{bState[g].push(item);chip.classList.add('selected');}
+        updateWts(); updatePreview();
+      });
+      c.appendChild(chip);
+    });
+  });
+  var nc=document.getElementById('neg-chips');
+  NEG_KW.forEach(function(kw){
+    var chip=document.createElement('div'); chip.className='neg-chip'; chip.textContent=kw;
+    chip.addEventListener('click', function(){
+      var i=negSel.indexOf(kw);
+      if(i>-1){negSel.splice(i,1);chip.classList.remove('added');}
+      else{negSel.push(kw);chip.classList.add('added');}
+      updatePreview();
+    });
+    nc.appendChild(chip);
+  });
+}
+
+function updateWts() {
+  var all=[]; Object.values(bState).forEach(function(a){all=all.concat(a);});
+  var c=document.getElementById('weight-rows'); c.innerHTML='';
+  if(!all.length) return;
+  all.forEach(function(item){
+    if(!wts[item]) wts[item]=1.0;
+    var row=document.createElement('div'); row.className='weight-row';
+    var lbl=document.createElement('span'); lbl.className='weight-label'; lbl.textContent=item;
+    var sl=document.createElement('input'); sl.type='range'; sl.min=0.5; sl.max=2.0; sl.step=0.1; sl.value=wts[item];
+    var val=document.createElement('span'); val.className='weight-val'; val.textContent=parseFloat(wts[item]).toFixed(1);
+    sl.addEventListener('input',function(){wts[item]=parseFloat(this.value);val.textContent=parseFloat(this.value).toFixed(1);updatePreview();});
+    row.appendChild(lbl); row.appendChild(sl); row.appendChild(val); c.appendChild(row);
+  });
+}
+
+function updatePreview() {
+  var parts=[];
+  Object.keys(bState).forEach(function(g){
+    bState[g].forEach(function(item){
+      var w=wts[item]||1.0;
+      var t=selLang==='en'?(ZH_EN[item]||item):item;
+      parts.push(Math.abs(w-1)>0.05?'('+t+':'+w.toFixed(1)+')':t);
+    });
+  });
+  parts.push(selRatio);
+  var prev=document.getElementById('prompt-preview');
+  if(parts.length<=1){prev.innerHTML='<span style="color:var(--text-dim)">請選取左方選項…</span>';}
+  else{prev.textContent=parts.join(', ');}
+  var negEl=document.getElementById('neg-preview');
+  var negBtn=document.getElementById('copy-neg-btn');
+  if(negSel.length){
+    negEl.style.display='block'; negEl.textContent='⊖ '+negSel.join(', ');
+    negBtn.disabled=false; negBtn.style.opacity='1'; negBtn.style.cursor='pointer';
+  } else {
+    negEl.style.display='none';
+    negBtn.disabled=true; negBtn.style.opacity='.4'; negBtn.style.cursor='default';
+  }
+}
+
+function initRatio() {
+  document.querySelectorAll('.ratio-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.ratio-btn').forEach(function(b){b.classList.remove('active');});
+      this.classList.add('active'); selRatio=this.dataset.ratio; updatePreview();
+    });
+  });
+}
+function initLang() {
+  document.querySelectorAll('.lang-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.lang-btn').forEach(function(b){b.classList.remove('active');});
+      this.classList.add('active'); selLang=this.dataset.lang; updatePreview();
+    });
+  });
+}
+
+function copyBuiltPrompt(type) {
+  if(type==='pos'){
+    var t=document.getElementById('prompt-preview').textContent;
+    if(!t||t.includes('請選取')){showToast('⚠️ 請先選取選項');return;}
+    navigator.clipboard.writeText(t).then(function(){copies++;localStorage.setItem('pv_copies',copies);showToast('✅ 正向提示已複製！');});
+  } else {
+    if(!negSel.length){showToast('⚠️ 請先選取負向關鍵字','error');return;}
+    navigator.clipboard.writeText(negSel.join(', ')).then(function(){showToast('⊖ 負向提示已複製！');});
+  }
+}
+
+function saveBuiltPrompt() {
+  var t=document.getElementById('prompt-preview').textContent;
+  if(!t||t.includes('請選取')){showToast('⚠️ 請先選取選項');return;}
+  built++; localStorage.setItem('pv_built',built);
+  var np={id:Date.now(),title:'自建 '+new Date().toLocaleDateString('zh-TW'),category:'social',ratio:selRatio.replace('--ar ',''),prompt:t,neg:negSel.join(', '),tags:['自建'],gradient:'linear-gradient(135deg,#1a2a1a,#2a1a2a)',emoji:'⚗',versions:[{ver:'v1',change:'工坊建立'}]};
+  custom.push(np); allPrompts.push(np); localStorage.setItem('pv_custom',JSON.stringify(custom));
+  showToast('💾 已儲存到資料庫！'); applyFilter(); updateCounts();
+  document.getElementById('stat-total').textContent=allPrompts.length;
+}
+
+// ── AI EXPAND (強化錯誤處理) ──────────────────────────────────────────────
+function aiExpand() {
+  var inp=document.getElementById('ai-input').value.trim();
+  if(!inp){showToast('⚠️ 請輸入關鍵字');return;}
+  if(!apiKey){openModal('modal-api');showToast('請先設定 API 金鑰');return;}
+  var ld=document.getElementById('ai-loading');
+  var skel=document.getElementById('ai-skeleton');
+  var re=document.getElementById('ai-result');
+  var btn=document.getElementById('ai-btn');
+  ld.classList.add('visible'); skel.classList.add('visible'); re.innerHTML=''; btn.disabled=true; btn.textContent='…';
+  fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,
+      messages:[{role:'user',content:'你是 AI 繪圖提示語專家。請將以下中文關鍵字擴寫成專業英文 AI 繪圖提示語，適用於 Midjourney 或 Stable Diffusion。包含主體、風格、燈光、鏡頭、渲染細節，約 60-100 個英文單字。只輸出提示語本身。\n\n關鍵字：'+inp}]})
+  }).then(function(res){
+    // ── 強化 HTTP 狀態碼錯誤處理 ──
+    if(!res.ok){
+      return res.json().then(function(errData){
+        var err=new Error(errData.error&&errData.error.message||'API error');
+        err.status=res.status;
+        throw err;
+      }).catch(function(e){
+        if(e.status) throw e;
+        var err=new Error('HTTP '+res.status);
+        err.status=res.status;
+        throw err;
+      });
+    }
+    return res.json();
+  }).then(function(d){
+    ld.classList.remove('visible'); skel.classList.remove('visible'); btn.disabled=false; btn.textContent='✦ 擴寫';
+    var txt=d.content&&d.content[0]?d.content[0].text:'生成失敗，請確認金鑰';
+    re.innerHTML='<div style="background:var(--surface2);border:1px solid rgba(200,241,53,0.2);border-radius:10px;padding:13px;font-family:Courier New,monospace;font-size:12px;line-height:1.7;color:var(--text);margin:10px 0 8px">'+txt+'</div>'+
+      '<button class="btn btn-accent" style="min-height:44px" onclick="copyText(\''+encodeURIComponent(txt)+'\')">📋 複製</button>';
+  }).catch(function(err){
+    ld.classList.remove('visible'); skel.classList.remove('visible'); btn.disabled=false; btn.textContent='✦ 擴寫';
+    console.error('API Error:', err);
+    var msg, isNetErr=false;
+    if(!navigator.onLine){
+      msg='⚡ 無網路連線，請檢查您的網路設定。';
+    } else if(err.status===401){
+      msg='🔑 API 金鑰無效或已過期，請重新設定。';
+    } else if(err.status===429){
+      msg='⏱ 請求過於頻繁（Rate Limit），請稍後再試。';
+    } else if(err.status===500||err.status===503){
+      msg='🌐 Anthropic 伺服器暫時異常，請稍後再試。';
+    } else if(err.status){
+      msg='❌ API 錯誤（HTTP '+err.status+'），請確認設定。';
+    } else {
+      msg='🌐 連線異常，請確認網路或 API Proxy 設定。';
+      isNetErr=true;
+    }
+    re.innerHTML='<div class="api-error"><span class="api-error-icon">⚠️</span><span>'+msg+(err.status===401?' <button class="btn btn-ghost btn-sm" style="margin-top:6px;display:inline-block" onclick="openModal(\'modal-api\')">重新設定金鑰</button>':'')+'</span></div>';
+  });
+}
+
+function copyText(enc){navigator.clipboard.writeText(decodeURIComponent(enc)).then(function(){showToast('✅ 已複製！');});}
+
+// ── ADD PROMPT ────────────────────────────────────────────────────────────
+function openAddModal(){openModal('modal-add');}
+function saveNewPrompt() {
+  var t=document.getElementById('add-title').value.trim();
+  var pr=document.getElementById('add-prompt').value.trim();
+  var ng=document.getElementById('add-neg').value.trim();
+  var ca=document.getElementById('add-category').value.trim()||'social';
+  var tg=document.getElementById('add-tags').value.split(',').map(function(x){return x.trim();}).filter(Boolean);
+  if(!t||!pr){showToast('⚠️ 請填寫名稱和提示語');return;}
+  var np={id:Date.now(),title:t,category:ca,ratio:'1:1',prompt:pr,neg:ng,tags:tg,gradient:'linear-gradient(135deg,#1a2a3a,#2a1a3a)',emoji:'✦',versions:[{ver:'v1',change:'手動新增'}]};
+  custom.push(np); allPrompts.push(np); localStorage.setItem('pv_custom',JSON.stringify(custom));
+  closeModal('modal-add'); showToast('✦ 新增成功！'); applyFilter(); renderCats(); updateCounts();
+  ['add-title','add-prompt','add-neg','add-category','add-tags'].forEach(function(i){document.getElementById(i).value='';});
+}
+
+// ── EXPORT / IMPORT ───────────────────────────────────────────────────────
+function exportJSON() {
+  var exportData = {
+    version: 1,
+    exported: new Date().toISOString(),
+    prompts: custom,
+    favorites: favs
+  };
+  var blob = new Blob([JSON.stringify(exportData, null, 2)], {type:'application/json'});
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href   = url;
+  a.download = 'promptvault-export-'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
+  showToast('⬇ 已匯出 JSON 檔案！');
+}
+
+function initImport() {
+  var fileInput = document.getElementById('import-file-input');
+  var dropArea  = document.getElementById('import-drop');
+  fileInput.addEventListener('change', function(){
+    if(this.files[0]) processImportFile(this.files[0]);
+  });
+  dropArea.addEventListener('dragover', function(e){e.preventDefault();this.classList.add('dragover');});
+  dropArea.addEventListener('dragleave', function(){this.classList.remove('dragover');});
+  dropArea.addEventListener('drop', function(e){
+    e.preventDefault(); this.classList.remove('dragover');
+    if(e.dataTransfer.files[0]) processImportFile(e.dataTransfer.files[0]);
+  });
+}
+
+function processImportFile(file) {
+  var status = document.getElementById('import-status');
+  if(!file.name.endsWith('.json')){status.innerHTML='<span style="color:#f15f79">請選取 .json 檔案</span>';return;}
+  var reader = new FileReader();
+  reader.onload = function(e){
+    try {
+      var data = JSON.parse(e.target.result);
+      var imported = data.prompts || (Array.isArray(data) ? data : []);
+      if(!imported.length){status.innerHTML='<span style="color:#f15f79">JSON 格式錯誤或無提示語資料</span>';return;}
+      // Deduplicate by id
+      var existingIds = allPrompts.map(function(p){return p.id;});
+      var newOnes = imported.filter(function(p){return existingIds.indexOf(p.id)<0;});
+      if(!newOnes.length){status.innerHTML='<span style="color:var(--accent3)">所有提示語已存在，無需匯入</span>';return;}
+      newOnes.forEach(function(p){ custom.push(p); allPrompts.push(p); });
+      localStorage.setItem('pv_custom',JSON.stringify(custom));
+      // Also merge favorites if present
+      if(data.favorites && Array.isArray(data.favorites)){
+        data.favorites.forEach(function(id){if(favs.indexOf(id)<0) favs.push(id);});
+        localStorage.setItem('pv_favs',JSON.stringify(favs));
+      }
+      updateCounts(); applyFilter(); renderCats();
+      status.innerHTML='<span style="color:var(--accent)">✅ 成功匯入 '+newOnes.length+' 個提示語！</span>';
+      closeModal('modal-import');
+      showToast('✅ 匯入 '+newOnes.length+' 個提示語！');
+    } catch(err){
+      console.error('Import error:', err);
+      status.innerHTML='<span style="color:#f15f79">JSON 解析失敗：'+err.message+'</span>';
+    }
+  };
+  reader.readAsText(file);
+}
+
+function confirmClearCustom() {
+  if(!custom.length){showToast('沒有自建提示語可清除');return;}
+  // Simple confirm with custom modal feel using toast + second button
+  var confirmed = confirm('確定要清除全部 '+custom.length+' 個自建提示語？此操作無法復原。\n\n建議先「匯出 JSON」備份。');
+  if(!confirmed) return;
+  custom.length = 0;
+  allPrompts = BASE.slice();
+  localStorage.removeItem('pv_custom');
+  // Remove custom ids from favs
+  var baseIds = BASE.map(function(p){return p.id;});
+  favs = favs.filter(function(id){return baseIds.indexOf(id)>-1;});
+  localStorage.setItem('pv_favs',JSON.stringify(favs));
+  updateCounts(); applyFilter(); renderCats(); renderProfile();
+  showToast('🗑 已清除所有自建提示語');
+}
+
+// ── API KEY (with masking) ────────────────────────────────────────────────
+function maskKey(k) {
+  if(!k||k.length<8) return k;
+  return k.substring(0,7)+'…'+k.substring(k.length-4);
+}
+
+function showApiModal() {
+  var display = document.getElementById('current-key-display');
+  var clearBtn = document.getElementById('clear-key-btn');
+  if(apiKey){
+    display.style.display='block';
+    display.textContent='目前金鑰：'+maskKey(apiKey);
+    clearBtn.style.display='inline-flex';
+  } else {
+    display.style.display='none';
+    clearBtn.style.display='none';
+  }
+  document.getElementById('api-key-input').value='';
+  openModal('modal-api');
+}
+
+function saveApiKey() {
+  var k=document.getElementById('api-key-input').value.trim();
+  if(!k){showToast('⚠️ 請輸入 API 金鑰');return;}
+  if(!k.startsWith('sk-ant-')){showToast('⚠️ 格式錯誤，應以 sk-ant- 開頭','error');return;}
+  apiKey=k; localStorage.setItem('pv_apikey',k);
+  updateApiStatus(); closeModal('modal-api'); showToast('✅ API 金鑰已儲存');
+}
+
+function clearApiKey() {
+  apiKey=''; localStorage.removeItem('pv_apikey');
+  updateApiStatus(); closeModal('modal-api'); showToast('🗑 API 金鑰已清除');
+}
+
+function updateApiStatus() {
+  var el=document.getElementById('api-status-text');
+  if(apiKey){el.textContent='✅ '+maskKey(apiKey);el.style.color='var(--accent)';}
+  else{el.textContent='點擊設定 API 金鑰';el.style.color='';}
+}
+
+// ── MODAL HELPERS ─────────────────────────────────────────────────────────
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+// ── TOAST (supports error type) ───────────────────────────────────────────
+function showToast(msg, type) {
+  var t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast'; // reset
+  if(type==='error') t.classList.add('error');
+  t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');}, 2400);
+}
+
+init();
+</script>
+</body>
+</html>
