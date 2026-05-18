@@ -107,7 +107,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .prompt-card:active{transform:scale(0.98)}
 .preview-ph{width:100%;height:148px;display:flex;align-items:center;justify-content:center;font-size:36px;position:relative;overflow:hidden}
 .preview-ph .grad{position:absolute;inset:0;opacity:0.55}
-.card-body{padding:13px}
+.card-body{padding:10px}
 .card-title{font-size:13.5px;font-weight:600;margin-bottom:5px;line-height:1.4}
 .card-prompt{font-size:11.5px;color:var(--text-muted);line-height:1.6;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .card-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
@@ -265,8 +265,15 @@ textarea.ai-input{resize:vertical;min-height:80px}
   .header{display:none}
   .mobile-header{display:flex}
   .tabbar{display:block}
-  .page{padding:14px 14px calc(var(--tabbar-h) + var(--safe-b) + 20px)}
-  .masonry-grid{columns:1}
+  .page{padding:12px 10px calc(var(--tabbar-h) + var(--safe-b) + 16px)}
+  .masonry-grid{columns:2;column-gap:8px}
+  .preview-ph{height:110px;font-size:28px}
+  .card-title{font-size:12px}
+  .card-prompt{font-size:10.5px;-webkit-line-clamp:2}
+  .card-tag{font-size:9.5px;padding:2px 6px}
+  .card-btn-copy{font-size:11.5px;padding:9px 6px;min-height:40px}
+  .card-btn-icon{width:40px;height:40px;font-size:15px}
+  .card-body{padding:9px}
   .section-title{font-size:18px}
   .lab-layout{grid-template-columns:1fr}
   .preview-box{position:static}
@@ -275,7 +282,7 @@ textarea.ai-input{resize:vertical;min-height:80px}
   .data-bar{flex-direction:column;align-items:flex-start}
   .section-actions{margin-left:0;width:100%}
 }
-@media(max-width:375px){.page{padding-left:12px;padding-right:12px}}
+@media(max-width:375px){.page{padding-left:10px;padding-right:10px}.masonry-grid{column-gap:6px}.card-body{padding:8px}}
 </style>
 </head>
 <body>
@@ -353,6 +360,7 @@ textarea.ai-input{resize:vertical;min-height:80px}
         <div class="filter-tag" data-filter="macro">微距攝影</div>
         <div class="filter-tag" data-filter="personal">🌟 個人風格</div>
         <div class="filter-tag" data-filter="personal2">🎖️ 專業領域形象</div>
+        <div class="filter-tag" data-filter="nature">🌍 大自然探險</div>
     </div>
     <div class="masonry-grid" id="prompt-grid"></div>
   </div>
@@ -1935,6 +1943,79 @@ var PERSONAL_PROMPTS_2 = [
    versions:[{ver:"v1",change:"聯合國藍徽背板與發言台麥克風塑造最高規格國際政治家氣場"}]}
 ];
 
+
+var PERSONAL_NATURE = [
+  {id:401,title:"雪山巔峰：冒險登山",category:"nature",ratio:"16:9",
+   prompt:"Hyper-realistic cinematic photo of a joyful Asian man with beaming smile and short grey hair, standing on a rocky mountain peak in professional climbing gear, technical jacket, pants and harness, holding an ice axe, vast epic range of snow-capped mountains under deep blue sky behind him, bright sunlight reflecting off glacial snow, adventurous confident expression, 8K photorealistic, golden rim light, wide angle",
+   neg:"indoor, bad anatomy, blurry face, poor gear, dark underexposed, flat lighting, distorted",
+   tags:["大自然","雪山","登山","探險","個人風格III"],
+   gradient:"linear-gradient(135deg,#b8d8f8,#ddeeff)",emoji:"🏔️",
+   versions:[{ver:"v1",change:"以廣角視角強調雪山群的壯闊史詩感，冰鎬與裝備突顯登山家氣勢"}]},
+
+  {id:402,title:"冰川漫步：極地奇景",category:"nature",ratio:"16:9",
+   prompt:"Realistic photo of a cheerful Asian man with wide open-mouth smile and short grey hair, walking on a vast glacier, wearing warm black puffy down jacket and wool beanie, holding a walking stick, massive river of ice and dramatic glacial blue crevasses stretching behind him, cold crisp polar light with subtle blue cast, breath visible in freezing air, sense of wonder and scale, photorealistic",
+   neg:"tropical setting, warm colors, bad posture, no glacier crevasses, blurry, poor coat",
+   tags:["大自然","冰川","極地","羽絨衣","個人風格III"],
+   gradient:"linear-gradient(135deg,#b8e8f8,#d8f0ff)",emoji:"🧊",
+   versions:[{ver:"v1",change:"冰川裂隙的藍色深度與寒冷清新光線傳遞極地奇景的震撼尺度"}]},
+
+  {id:403,title:"清澈河流：皮划艇探險",category:"nature",ratio:"4:3",
+   prompt:"Full-body candid documentary style photo of a spirited Asian man with joyful smile and grey hair, paddling a bright yellow kayak on an incredibly clear river, pebbles visible through crystal water, dense lush green forest lining both banks, dappled sunlight through forest canopy, man wearing sporty water shirt and bright orange life vest, warm natural expression, photojournalism energy",
+   neg:"murky water, no forest, indoor pool, staged pose, bad kayak, dark scene, bad anatomy",
+   tags:["大自然","河流","皮划艇","森林","個人風格III"],
+   gradient:"linear-gradient(135deg,#003366,#006699)",emoji:"🚣",
+   versions:[{ver:"v1",change:"黃色皮划艇與清澈見底的溪流形成鮮明對比，紀實攝影風格捕捉探險活力"}]},
+
+  {id:404,title:"紅杉森林：古木漫步",category:"nature",ratio:"9:16",
+   prompt:"Hyper-realistic photo of a relaxed Asian man with genuine warm smile and grey hair, wandering a winding path through ancient towering redwood forest, wearing outdoor casual vest over shirt, hiking pants and baseball cap, holding a camera, giant trees with shafts of golden sunlight filtering through dense canopy far above, moody forest atmosphere, sense of awe at ancient scale",
+   neg:"small trees, urban park, dark underexposed, forced smile, bad outfit, cluttered",
+   tags:["大自然","紅杉","森林","古木","個人風格III"],
+   gradient:"linear-gradient(135deg,#1a3310,#2d5518)",emoji:"🌲",
+   versions:[{ver:"v1",change:"神聖光柱穿透百年紅杉的樹冠，渺小身影對比古木傳遞自然的壯麗敬畏"}]},
+
+  {id:405,title:"薰衣草花海：普羅旺斯",category:"nature",ratio:"16:9",
+   prompt:"Dreamy romantic medium shot photo of a joyful Asian man with beaming smile and grey hair, standing amidst a vast endless field of purple lavender in full bloom, mountains under clear blue sky in background, butterflies drifting in air, man wearing light linen shirt hands gesturing naturally, looking at camera with genuine warm joy, soft romantic golden hour light, gentle bokeh lavender foreground",
+   neg:"urban backdrop, artificial flowers, dark, forced pose, harsh flash, bad expression",
+   tags:["大自然","薰衣草","花海","普羅旺斯","個人風格III"],
+   gradient:"linear-gradient(135deg,#4a2d6b,#8b5ab8)",emoji:"💜",
+   versions:[{ver:"v1",change:"夢幻柔焦的薰衣草前景與溫暖黃金時刻光線打造浪漫普羅旺斯氛圍"}]},
+
+  {id:406,title:"廣闊草原：縱馬馳騁",category:"nature",ratio:"16:9",
+   prompt:"Epic wide-angle golden hour photo of a confident joyful Asian man with grey hair galloping on a dark brown horse across an endless grassy prairie, grass waves in the wind, distant purple mountain ranges at horizon, man wearing leather jacket, denim shirt and cowboy hat, holding reins with natural ease, wind-swept hair, dramatic side golden light casting long shadows, sense of freedom and power",
+   neg:"slow walk, urban street, no horse, bad riding posture, flat lighting, no mountains",
+   tags:["大自然","草原","騎馬","黃金時刻","個人風格III"],
+   gradient:"linear-gradient(135deg,#4d3800,#8b6a10)",emoji:"🐎",
+   versions:[{ver:"v1",change:"黃金時刻的長影與縱馬飛馳的動態呈現草原上自由奔放的生命張力"}]},
+
+  {id:407,title:"壯觀瀑布：震撼水力",category:"nature",ratio:"9:16",
+   prompt:"Hyper-realistic photojournalism style photo of a joyful Asian man with wide excited smile and grey hair, standing close to the base of a thundering majestic waterfall, powerful white water crashing down massive cliff, fine mist filling the air creating a soft rainbow arc, man wearing practical hiking vest, face slightly damp glistening, beaming with raw excitement and wonder, dramatic high energy natural light",
+   neg:"calm water, indoor fountain, dark scene, sad expression, no mist, no rainbow, blurry",
+   tags:["大自然","瀑布","彩虹","戶外","個人風格III"],
+   gradient:"linear-gradient(135deg,#001a33,#003366)",emoji:"🌊",
+   versions:[{ver:"v1",change:"瀑布水霧折射的彩虹弧線與濺濕的臉龐共同傳遞親臨大水力的震撼情緒"}]},
+
+  {id:408,title:"山中湖畔：垂釣晨曦",category:"nature",ratio:"16:9",
+   prompt:"Realistic golden hour photo of a calm contented Asian man with grey hair and baseball cap, sitting on a weathered wooden dock with legs dangling over edge, holding a fishing rod over a vast glassy mountain lake at sunrise, perfect mirror reflection of pine tree mountains and pink sky in still water, relaxed peaceful expression, warm soft orange and gold light, serene and meditative atmosphere",
+   neg:"dark night, no reflection, urban lake, bad posture, no fishing rod, harsh midday light",
+   tags:["大自然","湖泊","垂釣","晨曦","個人風格III"],
+   gradient:"linear-gradient(135deg,#c86400,#e09040)",emoji:"🎣",
+   versions:[{ver:"v1",change:"湖面如鏡的晨曦倒影與木碼頭的垂釣剪影呈現山中清晨的禪意寧靜"}]},
+
+  {id:409,title:"神秘峽谷：光縫探險",category:"nature",ratio:"9:16",
+   prompt:"Dynamic dramatic photo of an adventurous Asian man with broad joyful smile and grey hair, navigating through a deep narrow slot canyon, impossibly tall smooth sandstone walls sculpted by ancient water rising on both sides, a single shaft of sunlight piercing down from the opening above, man wearing functional tactical jacket and small backpack, holding a flashlight, looking upward toward the light, high contrast chiaroscuro",
+   neg:"wide open canyon, flat lighting, dark with no light shaft, bad outfit, no drama, blurry",
+   tags:["大自然","峽谷","光縫","探險","個人風格III"],
+   gradient:"linear-gradient(135deg,#4d2800,#8b4a10)",emoji:"🏜️",
+   versions:[{ver:"v1",change:"單一天光穿透峽谷的戲劇性光柱賦予探索者仰望希望的史詩構圖"}]},
+
+  {id:410,title:"苔蘚古森：魔幻漫步",category:"nature",ratio:"9:16",
+   prompt:"Hyper-realistic magical forest photo of a happy curious Asian man with genuine smile and grey hair, walking along a moss-carpeted path through an ancient primeval forest, massive gnarled trees completely covered in thick emerald green moss on all sides, magical dappled mysterious filtered light, man wearing waxed canvas jacket, scarf and baseball cap, holding a wooden walking stick, inquisitive wonder expression",
+   neg:"modern park, clean tidy trees, harsh sunlight, dark underexposed, no moss, urban path",
+   tags:["大自然","苔蘚","古森","魔幻","個人風格III"],
+   gradient:"linear-gradient(135deg,#0d2200,#1a3d00)",emoji:"🌿",
+   versions:[{ver:"v1",change:"全面覆蓋翠綠苔蘚的蜿蜒古木與斑駁魔幻光線共同打造奇幻原始森林氛圍"}]}
+];
+
 var CAT_META = {
   social:{label:'社群媒體',emoji:'📱',desc:'Instagram、YouTube、TikTok 等平台專用'},
   product:{label:'商品攝影',emoji:'📦',desc:'電商與產品展示提示語'},
@@ -1947,7 +2028,8 @@ var CAT_META = {
   architecture:{label:'建築設計',emoji:'🏛️',desc:'室內外建築、空間攝影與設計'},
   macro:{label:'微距攝影',emoji:'🔬',desc:'極近距離的自然與物件細節攝影'},
   personal:{label:'我的個人風格',emoji:'🌟',desc:'以你為主角的 10 種形象場景提示語，可搭配照片使用'},
-  personal2:{label:'我的專業領域形象',emoji:'🎖️',desc:'10 種跨領域專業大師形象：宗教、哲學、科學、軍事、政治等'}
+  personal2:{label:'我的專業領域形象',emoji:'🎖️',desc:'10 種跨領域專業大師形象：宗教、哲學、科學、軍事、政治等'},
+  nature:{label:'我的大自然探險',emoji:'🌍',desc:'10 種壯麗大自然場景：雪山、冰川、森林、峽谷、草原等'}
 };
 
 var BD = {
@@ -1968,7 +2050,7 @@ var copies     = parseInt(localStorage.getItem('pv_copies')||'0');
 var built      = parseInt(localStorage.getItem('pv_built')||'0');
 var custom     = JSON.parse(localStorage.getItem('pv_custom')||'[]');
 var apiKey     = localStorage.getItem('pv_apikey')||'';
-var allPrompts = BASE.concat(EXTRA_PROMPTS).concat(PERSONAL_PROMPTS).concat(PERSONAL_PROMPTS_2).concat(custom);
+var allPrompts = BASE.concat(EXTRA_PROMPTS).concat(PERSONAL_PROMPTS).concat(PERSONAL_PROMPTS_2).concat(PERSONAL_NATURE).concat(custom);
 var curFilter  = 'all';
 var curModalId = null;
 var bState     = {subject:[],style:[],lighting:[],camera:[],render:[]};
