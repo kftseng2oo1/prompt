@@ -1,44 +1,21 @@
-# Prompt 生成器
+# PromptVault · AI 提示語資料庫
 
-> Prompt 生成器
+收藏與組合 AI 繪圖提示語：內建範例庫、模組化組合器、AI 擴寫，可匯入匯出 JSON。
 
-## 📦 包含檔案
+**線上使用**：https://kftseng2oo1.github.io/prompt/
 
-- `icon-192.png`
-- `icon-512.png`
-- `manifest.json`
-- `sw.js`
-- `index.html`
-- `icon.svg`
-- `icon-maskable.svg`
-- `offline.html`
+## 主要功能
+- **資料庫**：內建範例（商品攝影、霓虹夜景、Logo、人像、3D 黏土、電商 Banner、海報、室內設計…），可搜尋、分類篩選、收藏
+- 每筆有正向／負向提示語與版本修改紀錄，一鍵複製
+- **🔧 模組化組合器**：挑選主題、風格、光線等模組並調整權重，設定比例與語言，即時預覽
+- **✦ AI 擴寫**：用 Claude 把簡短提示擴寫成完整提示
+- 自建提示語可存入資料庫；匯出／匯入 JSON
 
-## 🚀 部署到 GitHub Pages
+## 技術與依賴
+- 單檔 HTML PWA（`index.html` 內含全部 HTML/CSS/JS），`manifest.json` + `sw.js` 提供安裝到主畫面與離線快取。
+- Claude 直連 `api.anthropic.com`（需自備 API Key）
+- 本機資料：`pv_apikey`、`pv_custom`、`pv_favs`、`pv_built`、`pv_copies`
 
-```bash
-git init
-git add .
-git commit -m "init: Prompt 生成器 PWA"
-git branch -M main
-git remote add origin https://github.com/<username>/<repo>.git
-git push -u origin main
-```
-
-然後在 GitHub repo → **Settings → Pages** → Source 選 `main` 分支，等待幾分鐘後即可訪問。
-
-## 📱 安裝 PWA
-
-在支援的瀏覽器（Chrome / Edge / Safari iOS）中打開網頁，  
-點擊「**安裝**」或「**加入主畫面**」即可將此 App 安裝到裝置。
-
-## ⚙ 技術規格
-
-| 項目 | 值 |
-|------|-----|
-| display | standalone |
-| theme_color | #1a73e8 |
-| lang | zh-TW |
-| scope | /prompt/ |
-
----
-*由 [PWA 打包神器](https://github.com) 自動生成*
+## 備註
+- `prompt-library.html` 是較舊的版本（約 131 KB，`index.html` 約 149 KB），確認後可刪除。
+- 相關：[ai-pmp](https://github.com/kftseng2oo1/ai-pmp)（依照片生成人像提示詞）
