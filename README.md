@@ -17,5 +17,4 @@
 - 本機資料：`pv_apikey`、`pv_custom`、`pv_favs`、`pv_built`、`pv_copies`
 
 ## 備註
-- `prompt-library.html` 是較舊的版本（約 131 KB，`index.html` 約 149 KB），確認後可刪除。
 - 相關：[ai-pmp](https://github.com/kftseng2oo1/ai-pmp)（依照片生成人像提示詞）
