@@ -2425,7 +2425,7 @@ function aiExpand() {
   fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
     headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
-    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,
+    body:JSON.stringify({model:'claude-sonnet-5-5',max_tokens:500,
       messages:[{role:'user',content:'你是 AI 繪圖提示語專家。請將以下中文關鍵字擴寫成專業英文 AI 繪圖提示語，適用於 Midjourney 或 Stable Diffusion。包含主體、風格、燈光、鏡頭、渲染細節，約 60-100 個英文單字。只輸出提示語本身。\n\n關鍵字：'+inp}]})
   }).then(function(res){
     // ── 強化 HTTP 狀態碼錯誤處理 ──
